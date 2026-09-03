@@ -4,7 +4,15 @@ import { downloadMedia } from "../lib/download";
 import { useToast } from "./Toast";
 import { DownloadIcon, EyeIcon, FileTextIcon, FolderIcon, PlayIcon } from "./Icons";
 
-export function TypeBadge({ type, duration }: { type: MediaFile["fileType"]; duration?: string }) {
+export function TypeBadge({
+  type,
+  duration,
+  ext,
+}: {
+  type: MediaFile["fileType"];
+  duration?: string;
+  ext?: string;
+}) {
   return (
     <span
       className={`lat inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-extrabold tracking-wide ${
@@ -17,6 +25,7 @@ export function TypeBadge({ type, duration }: { type: MediaFile["fileType"]; dur
     >
       {type === "video" ? <PlayIcon width={11} height={11} /> : type === "pdf" ? <FileTextIcon width={11} height={11} /> : null}
       {TYPE_LABEL[type]}
+      {ext ? <span className={type === "video" ? "text-cream-300" : "text-ink-500"}>· {ext.toUpperCase()}</span> : null}
       {duration ? <span className="text-cream-300">· {duration}</span> : null}
     </span>
   );
@@ -76,7 +85,7 @@ export default function FileCard({
           </>
         )}
         <span className="absolute start-2 top-2">
-          <TypeBadge type={file.fileType} />
+          <TypeBadge type={file.fileType} ext={file.extension} />
         </span>
         <span className="absolute end-2 top-2 rounded-md bg-cream-50/90 px-2 py-1 text-[10px] font-extrabold text-ink-700 backdrop-blur-sm">
           {file.category}

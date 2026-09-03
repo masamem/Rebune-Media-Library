@@ -15,6 +15,11 @@ export function fileNameFor(file: MediaFile): string {
  * back to opening in a new tab (later replaced by Google Drive links).
  */
 export async function downloadFile(url: string, filename: string): Promise<"saved" | "opened"> {
+  // روابط Google Drive تُفتح مباشرة — المتصفح يتولى التحميل منها
+  if (/drive\.google\.com/.test(url)) {
+    window.open(url, "_blank", "noopener");
+    return "opened";
+  }
   try {
     const res = await fetch(url, { mode: "cors" });
     if (!res.ok) throw new Error("fetch failed");

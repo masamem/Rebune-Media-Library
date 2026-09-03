@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 896 672" role="img" aria-label="ملف وسائط">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBF6EE"/><stop offset="1" stop-color="#F1E7D4"/>
+    </linearGradient>
+  </defs>
+  <rect width="896" height="672" fill="url(#bg)"/>
+  <g transform="translate(448 320)" stroke="#E8601C" stroke-linecap="round" fill="none" opacity="0.85">
+    <circle r="52" stroke-width="12"/>
+    <g stroke-width="12">
+      <path d="M0-100v26M0 74v26M-100 0h26M74 0h26M-71-71l18 18M53 53l18 18M71-71l-18 18M-53 53l-18 18"/>
+    </g>
+  </g>
+  <text x="448" y="470" text-anchor="middle" font-family="Alexandria, Cairo, sans-serif" font-size="34" font-weight="800" letter-spacing="8" fill="#4C3D2F" opacity="0.75">REBUNE</text>
+  <rect x="338" y="500" width="220" height="8" rx="4" fill="#D8C6A9"/>
+</svg>

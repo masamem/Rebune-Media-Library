@@ -147,3 +147,9 @@ export const ArrowUpIcon = (p: P) => (
     <path d="M12 19V5m0 0-5 5m5-5 5 5" />
   </svg>
 );
+
+export const RefreshIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5" />
+  </svg>
+);

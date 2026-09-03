@@ -1,16 +1,21 @@
-import { FEATURED, MEDIA_FILES, type Section } from "../data/media";
+import { FEATURED, type MediaFile, type Section } from "../data/media";
 import { ForwardIcon, ImageIcon, PlayIcon, SparkIcon } from "./Icons";
 import { Reveal } from "./ui";
 
 export default function SectionCards({
   section,
   onSelect,
+  files,
+  loading,
 }: {
   section: Section;
   onSelect: (s: Section) => void;
+  files: MediaFile[];
+  loading: boolean;
 }) {
-  const videos = MEDIA_FILES.filter((f) => f.fileType === "video").length;
-  const images = MEDIA_FILES.filter((f) => f.fileType === "image").length;
+  const videos = files.filter((f) => f.fileType === "video").length;
+  const images = files.filter((f) => f.fileType === "image").length;
+  const num = (n: number) => (loading ? "…" : n);
 
   const cardBase =
     "group relative h-full w-full overflow-hidden rounded-[1.35rem] border p-6 text-start transition-all duration-300 hover:-translate-y-1.5 active:scale-[0.985] md:p-7";
@@ -49,7 +54,7 @@ export default function SectionCards({
               <span>
                 <span className="font-display block text-lg font-extrabold md:text-xl">فيديوهات المنتجات</span>
                 <span className="mt-1 flex items-center gap-2 text-xs font-bold text-cream-300">
-                  <span className="lat">{videos}</span> فيديوهات
+                  <span className="lat">{num(videos)}</span> فيديوهات
                   <ForwardIcon width={14} height={14} className="text-brand-400 transition-transform duration-300 group-hover:-translate-x-1" />
                 </span>
               </span>
@@ -75,7 +80,7 @@ export default function SectionCards({
               <span>
                 <span className="font-display block text-lg font-extrabold md:text-xl">صور وتصاميم المنتجات</span>
                 <span className="mt-1 flex items-center gap-2 text-xs font-bold text-ink-500">
-                  <span className="lat">{images}</span> صورة وتصميم
+                  <span className="lat">{num(images)}</span> صورة وتصميم
                   <ForwardIcon width={14} height={14} className="text-brand-500 transition-transform duration-300 group-hover:-translate-x-1" />
                 </span>
               </span>
