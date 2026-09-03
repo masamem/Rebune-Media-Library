@@ -42,9 +42,10 @@ const GROUP_ICON: Record<FileGroup, (p: { className?: string }) => ReactElement>
 };
 
 export function PreviewModal({ file, files, onClose, onNavigate, onDownload, onOpenProduct }: PreviewModalProps) {
-  const index = files.findIndex((f) => f.id === file.id);
-  const prev = index > 0 ? files[index - 1] : null;
-  const next = index < files.length - 1 ? files[index + 1] : null;
+  const idx = files.findIndex((f) => f.id === file.id);
+  const index = idx === -1 ? null : idx;
+  const prev = index !== null && index > 0 ? files[index - 1] : null;
+  const next = index !== null && index < files.length - 1 ? files[index + 1] : null;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -112,7 +113,7 @@ export function PreviewModal({ file, files, onClose, onNavigate, onDownload, onO
             </button>
           )}
 
-          {files.length > 1 && (
+          {index !== null && files.length > 1 && (
             <span dir="ltr" className="absolute bottom-3 start-1/2 translate-x-1/2 rounded-full bg-ink-950/60 px-2.5 py-1 font-mono text-[11px] font-semibold text-cream-50 backdrop-blur-sm">
               {index + 1} / {files.length}
             </span>
