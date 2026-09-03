@@ -1,1 +1,203 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Cairo", ui-sans-serif, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --color-cream-50: #fefcf8;
+  --color-cream-100: #fbf6ee;
+  --color-cream-200: #f4ecdf;
+  --color-cream-300: #e8dcc8;
+  --color-cream-400: #d8c6a9;
+
+  --color-ink-950: #1f1710;
+  --color-ink-900: #2a2018;
+  --color-ink-700: #4c3d2f;
+  --color-ink-500: #8a7663;
+  --color-ink-400: #a8957f;
+
+  --color-brand-700: #a84310;
+  --color-brand-600: #c74e12;
+  --color-brand-500: #e8601c;
+  --color-brand-400: #f07b3f;
+  --color-brand-300: #f5a271;
+  --color-brand-100: #fae3d2;
+  --color-brand-50: #fcf0e5;
+
+  --shadow-card: 0 1px 2px rgb(42 32 24 / 0.05), 0 10px 30px -12px rgb(42 32 24 / 0.14);
+  --shadow-lift: 0 2px 6px rgb(42 32 24 / 0.06), 0 24px 48px -16px rgb(42 32 24 / 0.24);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-cream-100);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+}
+
+/* Layered ambient background: warm glows + paper grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(52rem 30rem at 88% -6%, rgb(232 96 28 / 0.1), transparent 62%),
+    radial-gradient(44rem 26rem at -8% 16%, rgb(240 123 63 / 0.08), transparent 60%),
+    radial-gradient(46rem 40rem at 50% 120%, rgb(232 96 28 / 0.06), transparent 62%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: rgb(232 96 28 / 0.25);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-13px) rotate(var(--r, 0deg));
+  }
+}
+.animate-floaty {
+  animation: floaty 7s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes ring-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.play-ring {
+  animation: ring-pulse 2.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-pop {
+  animation: pop-in 0.38s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+
+@keyframes fade-soft {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-fade {
+  animation: fade-soft 0.5s ease both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-toast {
+  animation: toast-in 0.35s cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-floaty,
+  .play-ring,
+  .anim-pop,
+  .anim-fade,
+  .anim-toast {
+    animation: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ---------- Helpers ---------- */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.nice-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.nice-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.nice-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-cream-300);
+  border-radius: 99px;
+}
+.nice-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-300);
+}
