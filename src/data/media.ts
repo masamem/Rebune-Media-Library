@@ -33,17 +33,18 @@ export interface MediaFile {
 
 /* ------------------------------ demo assets ------------------------------ */
 
+/* أصول محلية داخل public/media — تعمل دائمًا دون اتصال خارجي */
 const IMG = {
-  derma: "https://image.qwenlm.ai/generated-images/e0ca4a76-541a-40ab-8e37-218eb6fe9167/_result.png",
-  silk: "https://image.qwenlm.ai/generated-images/ba5b9ef3-4c7d-4cd5-81e4-2a86a07d3ac9/_result.png",
-  blender: "https://image.qwenlm.ai/generated-images/769ae44f-0e07-4e5e-a91a-1365a9e975d8/_result.png",
-  vacuum: "https://image.qwenlm.ai/generated-images/940e617e-240e-4ba9-8022-d66a71286beb/_result.png",
-  kettle: "https://image.qwenlm.ai/generated-images/95cdbacd-d149-4133-bf32-50308e3bebaf/_result.png",
-  identity: "https://image.qwenlm.ai/generated-images/c13cf44d-1c26-49b2-9977-6c78fe4b04e2/_result.png",
-  offer: "https://image.qwenlm.ai/generated-images/0a635911-8dd7-46b8-9c18-9af7924d701e/_result.png",
-  catalog: "https://image.qwenlm.ai/generated-images/128000d0-a74f-48ed-8402-642f624f41fd/_result.png",
-  beautyLife: "https://image.qwenlm.ai/generated-images/117cc615-e1e0-432e-9d4b-4f5663532f7b/_result.png",
-  kitchenLife: "https://image.qwenlm.ai/generated-images/60074e49-8e39-4c82-8b0b-65d75e99ea0b/_result.png",
+  derma: "/media/derma.svg",
+  silk: "/media/silk.svg",
+  blender: "/media/blender.svg",
+  vacuum: "/media/vacuum.svg",
+  kettle: "/media/kettle.svg",
+  identity: "/media/identity.svg",
+  offer: "/media/promo.svg",
+  catalog: "/media/catalog.svg",
+  beautyLife: "/media/beauty-life.svg",
+  kitchenLife: "/media/kitchen-life.svg",
 };
 
 const VIDEO_BASE = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample";

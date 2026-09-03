@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 896 672" role="img" aria-label="مكواة الشعر السيراميك SilkPro">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBF6EE"/><stop offset="1" stop-color="#F1E7D4"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.38" r="0.62">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8F1E5"/><stop offset="1" stop-color="#E2D2B4"/>
+    </linearGradient>
+    <linearGradient id="cop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F07B3F"/><stop offset="1" stop-color="#C74E12"/>
+    </linearGradient>
+  </defs>
+  <rect width="896" height="672" fill="url(#bg)"/>
+  <rect width="896" height="672" fill="url(#glow)"/>
+  <g stroke="#E8601C" stroke-width="5" stroke-linecap="round" opacity="0.35">
+    <path d="M141 452v22M141 518v22M86 485h22M174 485h22M102 446l16 16M164 508l16 16M180 446l-16 16M118 508l-16 16"/>
+  </g>
+  <circle cx="141" cy="485" r="17" fill="none" stroke="#E8601C" stroke-width="5" opacity="0.35"/>
+  <ellipse cx="448" cy="560" rx="262" ry="28" fill="#2A2018" opacity="0.10"/>
+  <g transform="translate(448 330) rotate(-18)">
+    <!-- الذراع العلوي -->
+    <g transform="rotate(-9)">
+      <rect x="-215" y="-78" width="430" height="72" rx="36" fill="url(#arm)" stroke="#C9B28C" stroke-width="2"/>
+      <rect x="-215" y="-20" width="430" height="14" rx="7" fill="url(#cop)"/>
+      <circle cx="150" cy="-42" r="8" fill="#E8601C"/>
+      <path d="M-180 -58h120" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="7" stroke-linecap="round"/>
+    </g>
+    <!-- الذراع السفلي -->
+    <g transform="rotate(9)">
+      <rect x="-215" y="6" width="430" height="72" rx="36" fill="url(#arm)" stroke="#C9B28C" stroke-width="2"/>
+      <rect x="-215" y="6" width="430" height="14" rx="7" fill="url(#cop)"/>
+      <path d="M-180 60h120" stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="7" stroke-linecap="round"/>
+    </g>
+    <!-- المفصل -->
+    <circle cx="212" cy="0" r="26" fill="#3A2E22"/>
+    <circle cx="212" cy="0" r="26" fill="none" stroke="#1F1710" stroke-width="3"/>
+    <circle cx="212" cy="0" r="9" fill="#E8601C"/>
+    <!-- السلك -->
+    <path d="M236 6c46 26 34 78 74 96s74-6 92 22" fill="none" stroke="#3A2E22" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <g fill="#E8601C" opacity="0.7">
+    <path d="M668 168l6 14 14 6-14 6-6 14-6-14-14-6 14-6z"/>
+    <circle cx="222" cy="176" r="5"/>
+  </g>
+</svg>

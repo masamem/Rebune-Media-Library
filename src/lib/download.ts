@@ -2,8 +2,10 @@ import type { MediaFile } from "../data/media";
 
 /** Suggests a safe download filename from a media entry. */
 export function fileNameFor(file: MediaFile): string {
-  const ext = file.fileType === "video" ? "mp4" : file.fileType === "pdf" ? "pdf" : "png";
   const base = `${file.productCode}_${file.id}`;
+  const urlExt = file.downloadUrl.split("?")[0].split(".").pop()?.toLowerCase();
+  const fallback = file.fileType === "video" ? "mp4" : file.fileType === "pdf" ? "pdf" : "png";
+  const ext = urlExt && /^[a-z0-9]{2,4}$/.test(urlExt) ? urlExt : fallback;
   return `${base}.${ext}`;
 }
 
