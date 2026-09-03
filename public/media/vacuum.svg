@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 896 672" role="img" aria-label="المكنسة اللاسلكية AeroClean">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBF6EE"/><stop offset="1" stop-color="#F1E7D4"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.38" r="0.62">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="tube" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F8F1E5"/><stop offset="1" stop-color="#DFCEAE"/>
+    </linearGradient>
+    <linearGradient id="cop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F07B3F"/><stop offset="1" stop-color="#C74E12"/>
+    </linearGradient>
+  </defs>
+  <rect width="896" height="672" fill="url(#bg)"/>
+  <rect width="896" height="672" fill="url(#glow)"/>
+  <g stroke="#E8601C" stroke-width="5" stroke-linecap="round" opacity="0.35">
+    <path d="M197 118v22M197 184v22M142 151h22M230 151h22M158 112l16 16M220 174l16 16M236 112l-16 16M174 174l-16 16"/>
+  </g>
+  <circle cx="197" cy="151" r="17" fill="none" stroke="#E8601C" stroke-width="5" opacity="0.35"/>
+  <ellipse cx="470" cy="592" rx="255" ry="27" fill="#2A2018" opacity="0.10"/>
+  <g transform="translate(470 330) rotate(10)">
+    <!-- المقبض -->
+    <path d="M-14 -262c-6-42 10-64 44-64s52 24 46 66" fill="none" stroke="#3A2E22" stroke-width="20" stroke-linecap="round"/>
+    <!-- وحدة المحرك -->
+    <rect x="-52" y="-232" width="104" height="150" rx="40" fill="#3A2E22"/>
+    <rect x="-52" y="-232" width="104" height="150" rx="40" fill="none" stroke="#1F1710" stroke-width="3"/>
+    <rect x="-34" y="-206" width="68" height="42" rx="14" fill="url(#cop)"/>
+    <circle cx="0" cy="-122" r="10" fill="#E8601C"/>
+    <!-- حاوية الغبار -->
+    <rect x="-40" y="-82" width="80" height="112" rx="26" fill="#FFFFFF" fill-opacity="0.55" stroke="#C9B28C" stroke-width="2.5"/>
+    <path d="M-24 -58c14 10 34 10 48 0M-24 -30c14 10 34 10 48 0" fill="none" stroke="#C9B28C" stroke-width="4" stroke-linecap="round"/>
+    <!-- الأنبوب -->
+    <rect x="-15" y="30" width="30" height="196" rx="15" fill="url(#tube)" stroke="#C9B28C" stroke-width="2.5"/>
+    <rect x="-20" y="118" width="40" height="14" rx="7" fill="#E8601C"/>
+    <!-- رأس التنظيف -->
+    <rect x="-118" y="222" width="236" height="52" rx="26" fill="#3A2E22"/>
+    <rect x="-118" y="222" width="236" height="52" rx="26" fill="none" stroke="#1F1710" stroke-width="3"/>
+    <rect x="-92" y="238" width="184" height="12" rx="6" fill="url(#cop)"/>
+    <circle cx="-96" cy="274" r="10" fill="#6B5A48"/><circle cx="96" cy="274" r="10" fill="#6B5A48"/>
+  </g>
+  <g fill="#E8601C" opacity="0.7">
+    <path d="M690 210l6 14 14 6-14 6-6 14-6-14-14-6 14-6z"/>
+    <circle cx="262" cy="392" r="5"/>
+  </g>
+</svg>

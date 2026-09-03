@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 896 672" role="img" aria-label="الغلاية الكهربائية Tempo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBF6EE"/><stop offset="1" stop-color="#F1E7D4"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.38" r="0.62">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="stl" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F3ECDF"/><stop offset="0.45" stop-color="#E7DAC2"/><stop offset="1" stop-color="#CBB694"/>
+    </linearGradient>
+    <linearGradient id="cop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F07B3F"/><stop offset="1" stop-color="#C74E12"/>
+    </linearGradient>
+  </defs>
+  <rect width="896" height="672" fill="url(#bg)"/>
+  <rect width="896" height="672" fill="url(#glow)"/>
+  <g stroke="#E8601C" stroke-width="5" stroke-linecap="round" opacity="0.35">
+    <path d="M713 360v22M713 426v22M658 393h22M746 393h22M674 354l16 16M736 416l16 16M752 354l-16 16M690 416l-16 16"/>
+  </g>
+  <circle cx="713" cy="393" r="17" fill="none" stroke="#E8601C" stroke-width="5" opacity="0.35"/>
+  <ellipse cx="448" cy="572" rx="225" ry="26" fill="#2A2018" opacity="0.10"/>
+  <!-- بخار -->
+  <g fill="none" stroke="#C9B28C" stroke-width="7" stroke-linecap="round" opacity="0.8">
+    <path d="M560 158c-14-18 14-30 0-48"/>
+    <path d="M596 170c-14-18 14-30 0-48" opacity="0.6"/>
+  </g>
+  <g>
+    <!-- الفوهة -->
+    <path d="M540 250l58-70c8-10 22-2 20 10l-14 74z" fill="url(#stl)" stroke="#C9B28C" stroke-width="2.5"/>
+    <!-- المقبض -->
+    <path d="M352 236c-64 8-96 56-88 118 6 46 34 80 84 92" fill="none" stroke="#C74E12" stroke-width="22" stroke-linecap="round"/>
+    <path d="M352 236c-64 8-96 56-88 118 6 46 34 80 84 92" fill="none" stroke="#E8601C" stroke-width="12" stroke-linecap="round"/>
+    <!-- الجسم -->
+    <path d="M368 216h172c20 34 30 76 30 122 0 84-30 150-60 178h-112c-30-28-60-94-60-178 0-46 10-88 30-122z" fill="url(#stl)" stroke="#C9B28C" stroke-width="2.5"/>
+    <path d="M386 252c-12 30-18 60-18 90" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="9" stroke-linecap="round" fill="none"/>
+    <!-- الغطاء -->
+    <ellipse cx="454" cy="214" rx="92" ry="20" fill="#E7DAC2" stroke="#C9B28C" stroke-width="2.5"/>
+    <ellipse cx="454" cy="206" rx="60" ry="13" fill="url(#cop)"/>
+    <circle cx="454" cy="192" r="11" fill="#3A2E22"/>
+    <!-- نافذة المؤشر -->
+    <rect x="438" y="330" width="32" height="96" rx="16" fill="#FFFFFF" fill-opacity="0.6" stroke="#C9B28C" stroke-width="2.5"/>
+    <rect x="444" y="372" width="20" height="48" rx="10" fill="#E8601C" opacity="0.85"/>
+    <!-- القاعدة -->
+    <rect x="368" y="516" width="172" height="34" rx="14" fill="#3A2E22"/>
+    <circle cx="454" cy="533" r="6" fill="#E8601C"/>
+  </g>
+</svg>
