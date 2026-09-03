@@ -1,157 +1,149 @@
-/* أيقونات SVG مرسومة يدويًا لهوية Rebune */
+import type { SVGProps } from "react";
 
-export interface IconProps {
-  className?: string;
-}
+type P = SVGProps<SVGSVGElement>;
 
-const base = {
+const base = (props: P) => ({
+  width: 20,
+  height: 20,
+  viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
   strokeWidth: 1.9,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
-};
+  ...props,
+});
 
-export const LogoMark = ({ className, tone = "brand" }: IconProps & { tone?: "brand" | "light" }) => (
-  <svg viewBox="0 0 40 40" className={className} aria-hidden="true">
-    <rect x="2" y="2" width="36" height="36" rx="11" fill={tone === "brand" ? "#E8601C" : "#FDFCF8"} />
+/* Rebune sun mark — the brand anchor */
+export const SunMark = ({ className = "" }: { className?: string }) => (
+  <svg viewBox="0 0 48 48" className={className} fill="none" aria-hidden="true">
+    <circle cx="24" cy="24" r="8.5" stroke="currentColor" strokeWidth="3.4" />
     <path
-      d="M14 28V12h7.2a5.3 5.3 0 0 1 0 10.6H14m8 0 6 5.4"
-      fill="none"
-      stroke={tone === "brand" ? "#FDFCF8" : "#E8601C"}
-      strokeWidth="3.1"
+      d="M24 6v6M24 36v6M6 24h6M36 24h6M11.3 11.3l4.2 4.2M32.5 32.5l4.2 4.2M36.7 11.3l-4.2 4.2M15.5 32.5l-4.2 4.2"
+      stroke="currentColor"
+      strokeWidth="3.4"
       strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </svg>
 );
 
-export const IconSearch = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+export const SearchIcon = (p: P) => (
+  <svg {...base(p)}>
     <circle cx="11" cy="11" r="7" />
-    <path d="m20.5 20.5-4.6-4.6" />
+    <path d="m20 20-3.2-3.2" />
   </svg>
 );
 
-export const IconPlay = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-    <path d="M8.5 5.4v13.2a.6.6 0 0 0 .9.5l10.4-6.6a.6.6 0 0 0 0-1L9.4 4.9a.6.6 0 0 0-.9.5Z" fill="currentColor" />
+export const SearchOffIcon = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.2-3.2M8.5 8.5l5 5M13.5 8.5l-5 5" />
   </svg>
 );
 
-export const IconDownload = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="M12 3.5v11m0 0 4.5-4.5M12 14.5 7.5 10" />
-    <path d="M4 16.5v2A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-2" />
+export const PlayIcon = (p: P) => (
+  <svg {...base({ ...p, fill: "currentColor", strokeWidth: 0 })}>
+    <path d="M8.5 5.8c0-.9 1-1.5 1.8-1L19 10.9c.8.5.8 1.7 0 2.2l-8.7 6.1c-.8.5-1.8-.1-1.8-1V5.8Z" />
   </svg>
 );
 
-export const IconEye = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+export const DownloadIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 4v10m0 0 4-4m-4 4-4-4" />
+    <path d="M5 17v1.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V17" />
+  </svg>
+);
+
+export const EyeIcon = (p: P) => (
+  <svg {...base(p)}>
     <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
-export const IconFilm = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <rect x="3" y="5" width="18" height="14" rx="2.5" />
-    <path d="M7.5 5v14M16.5 5v14M3 9.5h4.5M3 14.5h4.5M16.5 9.5H21M16.5 14.5H21" />
-  </svg>
-);
-
-export const IconPhoto = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <rect x="3" y="5" width="18" height="14" rx="2.5" />
-    <circle cx="8.5" cy="10" r="1.6" />
-    <path d="m21 16-5.2-5.2a1 1 0 0 0-1.4 0L6 19" />
-  </svg>
-);
-
-export const IconSpark = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="m12 3 1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4L12 3Z" />
-    <path d="M18.5 16.5v4M16.5 18.5h4" />
-  </svg>
-);
-
-export const IconFolder = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="M3 7.5a2 2 0 0 1 2-2h4l2 2.2h8a2 2 0 0 1 2 2v8.8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z" />
-    <path d="M3 11h18" />
-  </svg>
-);
-
-export const IconPdf = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" />
-    <path d="M14 3v5h5M8.5 13.5h7M8.5 17h5" />
-  </svg>
-);
-
-export const IconTag = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="M20.6 13.3 13.3 20.6a2 2 0 0 1-2.8 0L3.5 13.6V3.5h10.1l7 7a2 2 0 0 1 0 2.8Z" />
-    <circle cx="8" cy="8" r="1.4" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-export const IconLayers = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="m12 3 9 5-9 5-9-5 9-5Z" />
-    <path d="m3.5 12.5 8.5 4.7 8.5-4.7M3.5 16.5 12 21l8.5-4.5" />
-  </svg>
-);
-
-export const IconX = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
+export const XIcon = (p: P) => (
+  <svg {...base(p)}>
     <path d="M6 6l12 12M18 6 6 18" />
   </svg>
 );
 
-export const IconCheck = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base} strokeWidth={2.4}>
-    <path d="m5 13 4 4L19 7" />
+/* RTL-aware: "back" points right in Arabic UIs */
+export const BackIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M9 6l6 6-6 6" />
   </svg>
 );
 
-export const IconChevronRight = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="m9 5 7 7-7 7" />
+export const ForwardIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M15 6l-6 6 6 6" />
   </svg>
 );
 
-export const IconChevronLeft = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="m15 5-7 7 7 7" />
+export const VideoIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="6" width="13" height="12" rx="2.5" />
+    <path d="m16 10.5 4-2.5v8l-4-2.5" />
   </svg>
 );
 
-/** سهم "للأمام" في واجهة RTL يشير لليسار */
-export const IconArrowForward = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" {...base}>
-    <path d="M19 12H5m6-6-6 6 6 6" />
+export const ImageIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
+    <circle cx="9" cy="10" r="1.6" />
+    <path d="m5 18 4.8-4.8a1.5 1.5 0 0 1 2.1 0l5.6 5.3M14.5 15.5l1.7-1.7a1.5 1.5 0 0 1 2.1 0l2.2 2" />
   </svg>
 );
 
-export const IconBoxSearch = ({ className }: IconProps) => (
-  <svg viewBox="0 0 96 96" className={className} aria-hidden="true" fill="none">
-    <path
-      d="M18 34v34l30 14 22-10.3"
-      stroke="#D8C6A9"
-      strokeWidth="3.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M18 34 48 20l30 14-30 14-30-14Zm30 14v34"
-      stroke="#A8957F"
-      strokeWidth="3.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="64" cy="60" r="13" fill="#FBF6EE" stroke="#E8601C" strokeWidth="3.6" />
-    <path d="m73.5 69.5 7.5 7.5" stroke="#E8601C" strokeWidth="3.6" strokeLinecap="round" />
-    <path d="M59 60h10M64 55v10" stroke="#E8601C" strokeWidth="2.6" strokeLinecap="round" opacity="0.45" />
+export const SparkIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 3.5 13.8 9l5.7 1.8-5.7 1.8L12 18.2l-1.8-5.6L4.5 10.8 10.2 9 12 3.5Z" />
+    <path d="M19 16.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" strokeWidth="1.4" />
+  </svg>
+);
+
+export const FileTextIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M6 3.5h8L19 8.5v12H6v-17Z" />
+    <path d="M14 3.5v5h5M9 13h7M9 16.5h7" />
+  </svg>
+);
+
+export const LayersIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m12 3.5 8.5 4.5L12 12.5 3.5 8 12 3.5Z" />
+    <path d="m4.5 12.5 7.5 4 7.5-4M4.5 16.5l7.5 4 7.5-4" strokeWidth="1.6" />
+  </svg>
+);
+
+export const CheckIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m5 12.5 4.5 4.5L19 7.5" />
+  </svg>
+);
+
+export const ClockIcon = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 2" />
+  </svg>
+);
+
+export const FolderIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4l2 2.5h8A1.5 1.5 0 0 1 20.5 9v9A1.5 1.5 0 0 1 19 19.5H5A1.5 1.5 0 0 1 3.5 18V6.5Z" />
+  </svg>
+);
+
+export const InfoIcon = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 11v5M12 7.8v.2" />
+  </svg>
+);
+
+export const ArrowUpIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 19V5m0 0-5 5m5-5 5 5" />
   </svg>
 );

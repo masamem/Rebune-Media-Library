@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 
-/* ---------- كشف عند التمرير ---------- */
-
+/** IntersectionObserver-driven scroll reveal wrapper. */
 export function Reveal({
   children,
   delay = 0,
@@ -12,64 +11,37 @@ export function Reveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShown(true);
-          io.disconnect();
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            el.classList.add("in");
+            io.unobserve(el);
+          }
         }
       },
-      { threshold: 0.1, rootMargin: "0px 0px -36px 0px" }
+      { threshold: 0.08, rootMargin: "0px 0px -24px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
   }, []);
 
   return (
-    <div
-      ref={ref}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={`reveal ${shown ? "reveal-in" : ""} ${className}`}
-    >
+    <div ref={ref} className={`reveal ${className}`} style={{ "--rd": `${delay}ms` } as CSSProperties}>
       {children}
     </div>
   );
 }
 
-/* ---------- Chip للفلاتر ---------- */
-
-export function Chip({
-  active,
-  onClick,
-  children,
-  tone = "dark",
-  ltr = false,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: ReactNode;
-  tone?: "dark" | "brand";
-  ltr?: boolean;
-}) {
+/** Small count pill used next to section titles. */
+export function CountPill({ n }: { n: number }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      dir={ltr ? "ltr" : undefined}
-      className={`h-9 shrink-0 whitespace-nowrap rounded-full px-4 text-[13px] font-bold transition-all duration-200 active:scale-95 ${
-        active
-          ? tone === "brand"
-            ? "bg-brand-500 text-white shadow-sm shadow-brand-500/30"
-            : "bg-ink-900 text-cream-50 shadow-sm"
-          : "border border-cream-300 bg-white text-ink-700 hover:border-brand-400 hover:text-brand-600"
-      }`}
-    >
-      {children}
-    </button>
+    <span className="lat inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-brand-500/12 px-2 text-sm font-bold text-brand-600">
+      {n}
+    </span>
   );
 }

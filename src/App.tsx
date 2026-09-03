@@ -1,214 +1,151 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  ALL_FILES,
-  GROUP_LABELS,
-  filesOfProduct,
-  fileTypeLabel,
-  isRecent,
+  MEDIA_FILES,
+  filterFiles,
+  groupByProduct,
+  type Category,
   type FileType,
   type MediaFile,
-  type View,
+  type Section,
 } from "./data/media";
-import { Footer, Header } from "./components/Header";
-import { Hero, SectionCards } from "./components/Hero";
-import { Library } from "./components/Library";
-import { PreviewModal, ProductSheet } from "./components/Modals";
-import { IconCheck } from "./components/Icons";
-
-const byDateDesc = (a: MediaFile, b: MediaFile) => b.date.localeCompare(a.date);
-
-/** بدء تحميل ملف — يُستبدل لاحقًا بروابط Google Drive الموقّعة */
-const triggerDownload = (f: MediaFile) => {
-  const a = document.createElement("a");
-  a.href = f.downloadUrl;
-  a.download = f.fileName;
-  a.target = "_blank";
-  a.rel = "noopener noreferrer";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-};
+import Header from "./components/Header";
+import Hero from "./components/Hero";
+import SectionCards from "./components/SectionCards";
+import FilterChips from "./components/FilterChips";
+import FileGrid from "./components/FileGrid";
+import PreviewModal from "./components/PreviewModal";
+import ProductView from "./components/ProductView";
+import Footer from "./components/Footer";
+import { ToastProvider } from "./components/Toast";
+import { Reveal } from "./components/ui";
 
 export default function App() {
-  const [view, setView] = useState<View>("all");
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("الكل");
-  const [ftype, setFtype] = useState<"all" | FileType>("all");
-  const [preview, setPreview] = useState<MediaFile | null>(null);
+  const [category, setCategory] = useState<Category | "all">("all");
+  const [fileType, setFileType] = useState<FileType | "all">("all");
+  const [section, setSection] = useState<Section>("all");
   const [productCode, setProductCode] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ id: number; msg: string } | null>(null);
+  const [preview, setPreview] = useState<MediaFile | null>(null);
 
-  /* البحث اللحظي + الفلاتر */
-  const filtered = useMemo(() => {
-    let list = [...ALL_FILES];
-    if (view === "videos") list = list.filter((f) => f.fileType === "video");
-    if (view === "designs") list = list.filter((f) => f.group === "social-design" || f.group === "brand");
-    if (view === "latest") list = list.filter(isRecent);
-    if (category !== "الكل") list = list.filter((f) => f.category === category);
-    if (ftype !== "all") list = list.filter((f) => f.fileType === ftype);
-
-    const q = query.trim().toLowerCase();
-    if (q) {
-      list = list.filter((f) =>
-        [f.productCode, f.productName, f.fileName, f.category, fileTypeLabel(f.fileType), GROUP_LABELS[f.group]]
-          .join(" ")
-          .toLowerCase()
-          .includes(q)
-      );
-    }
-
-    list.sort(byDateDesc);
-    if (view === "latest") list = list.slice(0, 9);
-    return list;
-  }, [view, category, ftype, query]);
-
-  /* إخفاء تمرير الصفحة عند فتح نافذة */
-  useEffect(() => {
-    const open = preview !== null || productCode !== null;
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [preview, productCode]);
-
-  /* إخفاء التنبيه تلقائيًا */
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2800);
-    return () => clearTimeout(t);
-  }, [toast]);
-
-  const showToast = useCallback((msg: string) => setToast({ id: Date.now(), msg }), []);
-
-  const handleDownload = useCallback(
-    (f: MediaFile) => {
-      triggerDownload(f);
-      showToast(`بدأ تحميل: ${f.fileName}`);
-    },
-    [showToast]
+  /* أحدث الملفات أولًا */
+  const sorted = useMemo(
+    () => [...MEDIA_FILES].sort((a, b) => b.date.localeCompare(a.date)),
+    [],
   );
 
-  const handleDownloadAll = useCallback(
-    (files: MediaFile[], label: string) => {
-      files.forEach((f, i) => setTimeout(() => triggerDownload(f), i * 550));
-      showToast(`جارٍ تحميل ${files.length} من ملفات ${label}…`);
-    },
-    [showToast]
+  const filtered = useMemo(
+    () => filterFiles(sorted, { section, category, fileType, query }),
+    [sorted, section, category, fileType, query],
   );
 
-  const scrollToLibrary = () => {
-    document.getElementById("library")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  /* ملفات القسم النشط فقط — لجعل عدّادات الفلاتر دقيقة */
+  const sectionFiles = useMemo(
+    () => filterFiles(sorted, { section, category: "all", fileType: "all", query: "" }),
+    [sorted, section],
+  );
+
+  const products = useMemo(() => groupByProduct(sorted), [sorted]);
+
+  const hasFilters =
+    query.trim() !== "" || category !== "all" || fileType !== "all" || section !== "all";
+
+  const scrollToLibrary = () =>
+    window.setTimeout(
+      () => document.getElementById("library")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      30,
+    );
+
+  const handleNavigate = (s: Section) => {
+    setProductCode(null);
+    setQuery("");
+    setCategory("all");
+    setFileType("all");
+    setSection(s);
+    if (s === "all") window.scrollTo({ top: 0, behavior: "smooth" });
+    else scrollToLibrary();
   };
 
-  const handleNavigate = useCallback((v: View) => {
-    setView(v);
-    if (v === "all") {
-      setQuery("");
-      setCategory("الكل");
-      setFtype("all");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      requestAnimationFrame(() =>
-        document.getElementById("library")?.scrollIntoView({ behavior: "smooth", block: "start" })
-      );
-    }
-  }, []);
-
-  const handleSuggestion = useCallback((q: string) => {
-    setQuery(q);
-    setCategory("الكل");
-    setFtype("all");
-    setView((v) => (v === "latest" ? "all" : v));
-    requestAnimationFrame(() =>
-      document.getElementById("library")?.scrollIntoView({ behavior: "smooth", block: "start" })
-    );
-  }, []);
-
-  const resetFilters = useCallback(() => {
+  const handleClearAll = () => {
     setQuery("");
-    setCategory("الكل");
-    setFtype("all");
-  }, []);
+    setCategory("all");
+    setFileType("all");
+    setSection("all");
+  };
 
-  const openProduct = useCallback((code: string) => {
-    setPreview(null);
+  const openProduct = (code: string) => {
     setProductCode(code);
-  }, []);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-  const productFiles = useMemo(
-    () => (productCode ? filesOfProduct(ALL_FILES, productCode) : []),
-    [productCode]
-  );
+  const activeGroup = productCode ? products.find((p) => p.code === productCode) ?? null : null;
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header view={view} onNavigate={handleNavigate} />
+    <ToastProvider>
+      <div className="flex min-h-dvh flex-col">
+        <Header section={section} inProductView={!!activeGroup} onNavigate={handleNavigate} />
 
-      <main className="flex-1">
-        <Hero
-          query={query}
-          onQuery={setQuery}
-          onSearchSubmit={scrollToLibrary}
-          onSuggestion={handleSuggestion}
-        />
+        <main className="flex-1">
+          {activeGroup ? (
+            <ProductView
+              group={activeGroup}
+              onBack={() => setProductCode(null)}
+              onPreview={setPreview}
+              onOpenProduct={openProduct}
+            />
+          ) : (
+            <>
+              <Hero query={query} onQuery={setQuery} />
 
-        <SectionCards onPick={handleNavigate} />
+              {/* الفلاتر — تظهر عند التمرير لأسفل أو عند البحث */}
+              <div className="mx-auto mt-8 max-w-6xl px-4 md:px-6">
+                <Reveal>
+                  <div className="rounded-[1.15rem] border border-cream-300/70 bg-cream-50/70 p-4 shadow-card md:p-5">
+                    <FilterChips
+                      files={sectionFiles}
+                      category={category}
+                      fileType={fileType}
+                      onCategory={setCategory}
+                      onFileType={setFileType}
+                    />
+                  </div>
+                </Reveal>
+              </div>
 
-        <Library
-          view={view}
-          files={filtered}
-          query={query}
-          category={category}
-          ftype={ftype}
-          setCategory={setCategory}
-          setFtype={setFtype}
-          onReset={resetFilters}
-          onPreview={setPreview}
-          onDownload={handleDownload}
-          onOpenProduct={openProduct}
-        />
-      </main>
+              <div className="mt-10">
+                <SectionCards
+                  section={section}
+                  onSelect={(s) => {
+                    const next = s === section ? "all" : s;
+                    setSection(next);
+                    if (next !== "all") scrollToLibrary();
+                  }}
+                />
+              </div>
 
-      <Footer onNavigate={handleNavigate} />
+              <div className="mt-4">
+                <FileGrid
+                  files={filtered}
+                  section={section}
+                  query={query}
+                  hasFilters={hasFilters}
+                  allProducts={products}
+                  onClearAll={handleClearAll}
+                  onPreview={setPreview}
+                  onOpenProduct={openProduct}
+                />
+              </div>
+            </>
+          )}
+        </main>
 
-      {/* نافذة المعاينة */}
-      {preview && (
+        <Footer />
+
         <PreviewModal
           file={preview}
-          files={filtered}
           onClose={() => setPreview(null)}
-          onNavigate={setPreview}
-          onDownload={handleDownload}
           onOpenProduct={openProduct}
         />
-      )}
-
-      {/* نافذة تفاصيل المنتج */}
-      {productCode && productFiles.length > 0 && (
-        <ProductSheet
-          code={productCode}
-          files={productFiles}
-          onClose={() => setProductCode(null)}
-          onPreview={(f) => setPreview(f)}
-          onDownload={handleDownload}
-          onDownloadAll={handleDownloadAll}
-        />
-      )}
-
-      {/* تنبيه التحميل */}
-      {toast && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-5 z-[70] flex justify-center px-4">
-          <div
-            key={toast.id}
-            className="anim-toast flex items-center gap-2.5 rounded-full bg-ink-950 py-2 pe-4 ps-2.5 text-sm font-bold text-cream-50 shadow-lift"
-          >
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-white">
-              <IconCheck className="h-4 w-4" />
-            </span>
-            <span className="max-w-[70vw] truncate">{toast.msg}</span>
-          </div>
-        </div>
-      )}
-    </div>
+      </div>
+    </ToastProvider>
   );
 }
