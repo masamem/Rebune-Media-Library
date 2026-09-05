@@ -34,9 +34,9 @@ export interface MediaFile {
 /* --------------------- عناصر بصرية ثابتة للموقع --------------------- */
 /* رسومات الموقع نفسه (ليست بيانات مكتبة) */
 export const FEATURED = {
-  heroMain: "/media/beauty-life.svg",
-  heroSmall1: "/media/promo.svg",
-  heroSmall2: "/media/kitchen-life.svg",
+  heroMain: "/media/hero-main.svg",
+  heroSmall1: "/media/hero-top.svg",
+  heroSmall2: "/media/hero-bottom.svg",
   videosCard: "/media/kitchen-life.svg",
   designsCard: "/media/promo.svg",
 };
