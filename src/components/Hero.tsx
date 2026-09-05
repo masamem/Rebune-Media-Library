@@ -1,7 +1,7 @@
 import { FEATURED, groupByProduct, type MediaFile } from "../data/media";
 import { PlayIcon, SearchIcon, SunMark, XIcon } from "./Icons";
 
-const SUGGESTIONS = ["RE-2211", "RE-3320", "عروض", "تجميل"];
+const SUGGESTIONS = ["RE-2211", "RE-3320", "تجميلي", "منزلي"];
 
 export default function Hero({
   query,
@@ -15,15 +15,19 @@ export default function Hero({
   loading: boolean;
 }) {
   const videos = files.filter((f) => f.fileType === "video").length;
-  const images = files.filter((f) => f.fileType !== "video").length;
+  const designs = files.filter((f) => f.fileType === "design").length;
   const products = groupByProduct(files).length;
 
   return (
     <section className="relative overflow-hidden">
       {/* حلقة شمسية دوّارة في الخلفية */}
-      <div className="pointer-events-none absolute -top-28 left-[-140px] hidden text-brand-500/10 lg:block" aria-hidden="true">
+      <div
+        className="pointer-events-none absolute -top-28 left-[-140px] hidden text-brand-500/10 lg:block"
+        aria-hidden="true"
+      >
         <SunMark className="animate-ring-spin h-[380px] w-[380px]" />
       </div>
+
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-brand-500/30 to-transparent"
         aria-hidden="true"
@@ -38,15 +42,15 @@ export default function Hero({
           </span>
 
           <h1 className="font-display mt-5 text-[2rem] font-extrabold leading-[1.3] text-ink-950 md:text-[2.8rem] md:leading-[1.25]">
-  مكتبة وسائط ريبون
-</h1>
+            مكتبة وسائط ريبون
+          </h1>
 
           <p className="mt-4 max-w-md text-[15px] font-medium leading-8 text-ink-700 md:text-base">
-            كل ما تحتاجه من صور وتصاميم وفيديوهات منتجات <span className="lat font-bold">ريبون</span> في
-            مكان واحد.
+            كل فيديوهات وتصاميم منتجات{" "}
+            <span className="lat font-bold">ريبون</span> في مكان واحد.
           </p>
 
-          {/* البحث — أهم عنصر */}
+          {/* البحث */}
           <form
             className="group relative mt-7"
             role="search"
@@ -55,14 +59,16 @@ export default function Hero({
             <span className="pointer-events-none absolute inset-y-0 start-5 grid place-items-center text-ink-400 transition-colors group-focus-within:text-brand-600">
               <SearchIcon width={22} height={22} />
             </span>
+
             <input
               type="search"
               value={query}
               onChange={(e) => onQuery(e.target.value)}
-              placeholder="ابحث باسم المنتج أو رقم الموديل..."
-              aria-label="ابحث باسم المنتج أو رقم الموديل"
+              placeholder="ابحث برقم المنتج مثل RE-2211 أو باسم الملف..."
+              aria-label="ابحث برقم المنتج أو اسم الملف"
               className="h-15 w-full rounded-full border-2 border-cream-300 bg-cream-50 pe-14 ps-14 text-[15px] font-semibold text-ink-950 shadow-card placeholder:font-medium placeholder:text-ink-400 transition-all duration-300 focus:border-brand-500 focus:shadow-lift focus:outline-none md:h-16 md:text-base"
             />
+
             {query && (
               <button
                 type="button"
@@ -75,8 +81,10 @@ export default function Hero({
             )}
           </form>
 
+          {/* اقتراحات البحث */}
           <div className="mt-4 flex flex-wrap items-center gap-2 text-[13px] font-semibold text-ink-500">
             <span>جرّب:</span>
+
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
@@ -97,56 +105,67 @@ export default function Hero({
             {[
               { n: products, l: "منتج" },
               { n: videos, l: "فيديو" },
-              { n: images, l: "صورة وتصميم وملف" },
+              { n: designs, l: "تصميم" },
             ].map((s) => (
               <div key={s.l} className="text-center">
                 <dt className="lat text-2xl font-extrabold text-ink-950 md:text-3xl">
                   {loading ? "…" : s.n}
                 </dt>
-                <dd className="mt-0.5 text-[11px] font-bold text-ink-500 md:text-xs">{s.l}</dd>
+
+                <dd className="mt-0.5 text-[11px] font-bold text-ink-500 md:text-xs">
+                  {s.l}
+                </dd>
               </div>
             ))}
           </dl>
         </div>
 
         {/* الكولاج — سطح المكتب فقط */}
-        <div className="relative hidden h-[420px] lg:block" aria-hidden="true">
-          <div className="absolute inset-y-4 start-6 end-24 overflow-hidden rounded-[1.6rem] border-4 border-cream-50 shadow-lift">
+        <div
+          className="relative hidden h-[420px] lg:block"
+          aria-hidden="true"
+        >
+          {/* الصورة الرئيسية */}
+          <div className="absolute inset-y-4 left-20 right-6 overflow-hidden rounded-[1.6rem] border-4 border-cream-50 shadow-lift">
             <img
               src={FEATURED.heroMain}
               alt=""
-              className="h-full w-full object-cover transition-transform duration-[2.5s] ease-out hover:scale-110"
+              className="h-full w-full object-cover transition-transform duration-[2.5s] ease-out hover:scale-105"
               loading="eager"
             />
-            <span className="absolute bottom-4 start-4 inline-flex items-center gap-2 rounded-full bg-ink-950/80 px-3.5 py-1.5 text-xs font-bold text-cream-50 backdrop-blur-sm">
-              <PlayIcon width={13} height={13} className="text-brand-400" />
-              فيديو Derma Glow — جديد
+
+            <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-ink-950/80 px-3.5 py-1.5 text-xs font-bold text-cream-50 backdrop-blur-sm">
+              <PlayIcon
+                width={13}
+                height={13}
+                className="text-brand-400"
+              />
+              فيديوهات جاهزة للنشر
             </span>
           </div>
 
-          <figure
-            className="animate-floaty absolute -bottom-2 start-0 w-44 rotate-[5deg] rounded-xl border-8 border-cream-50 bg-cream-50 shadow-lift"
-            style={{ "--tilt": "5deg" } as React.CSSProperties}
-          >
-            <img src={FEATURED.heroSmall1} alt="" className="aspect-[4/3] w-full rounded-md object-cover" />
-            <figcaption className="lat py-1.5 text-center text-[10px] font-bold tracking-wider text-ink-500">
-              RE-3320 · PowerMix
-            </figcaption>
-          </figure>
+          {/* الصورة الصغيرة العلوية */}
+          <div className="animate-floaty absolute -top-2 left-1 w-44 overflow-hidden rounded-2xl border-4 border-cream-50 shadow-lift">
+            <img
+              src={FEATURED.heroSmall1}
+              alt=""
+              className="aspect-[4/3] w-full object-cover"
+              loading="lazy"
+            />
+          </div>
 
-          <figure
-            className="animate-floaty absolute end-0 top-0 w-40 rotate-[-6deg] rounded-xl border-8 border-cream-50 bg-cream-50 shadow-lift"
-            style={{ "--tilt": "-6deg", animationDelay: "1.4s" } as React.CSSProperties}
+          {/* الصورة الصغيرة السفلية */}
+          <div
+            className="animate-floaty absolute bottom-4 left-0 w-40 overflow-hidden rounded-2xl border-4 border-cream-50 shadow-lift"
+            style={{ animationDelay: "1.4s" }}
           >
-            <img src={FEATURED.heroSmall2} alt="" className="aspect-[4/3] w-full rounded-md object-cover" />
-            <figcaption className="lat py-1.5 text-center text-[10px] font-bold tracking-wider text-ink-500">
-              RE-2730 · Tempo
-            </figcaption>
-          </figure>
-
-          <span className="absolute end-10 bottom-14 grid h-14 w-14 rotate-12 place-items-center rounded-2xl bg-brand-500 text-white shadow-lift">
-            <SunMark className="h-7 w-7" />
-          </span>
+            <img
+              src={FEATURED.heroSmall2}
+              alt=""
+              className="aspect-[4/3] w-full object-cover"
+              loading="lazy"
+            />
+          </div>
         </div>
       </div>
     </section>
