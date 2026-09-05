@@ -81,53 +81,53 @@ export default async function handler(
       },
     ];
 
-    const visited = new Set<string>([rootId]);
-    const files: Record<string, unknown>[] = [];
-    const debugItems: Record<string, unknown>[] = [];
+const files: Record<string, unknown>[] = [];
+const debugItems: Record<string, unknown>[] = [];
+const visited = new Set<string>([rootId]);
 
-    while (queue.length > 0) {
-      const folder = queue.shift()!;
-      let pageToken: string | undefined = undefined;
+while (queue.length > 0) {
+  const folder = queue.shift()!;
+  let pageToken: string | undefined = undefined;
 
-      do {
-        const page: any = await drive.files.list({
-          q: `'${esc(folder.id)}' in parents and trashed = false`,
-          fields: FIELDS,
-          pageSize: 1000,
-          pageToken,
-          supportsAllDrives: true,
-          includeItemsFromAllDrives: true,
-          orderBy: "folder,name",
-        });
+  do {
+    const page: any = await drive.files.list({
+      q: `'${esc(folder.id)}' in parents and trashed = false`,
+      fields: FIELDS,
+      pageSize: 1000,
+      pageToken,
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
+      orderBy: "folder,name",
+    });
 
-        for (const f of page.data.files ?? []) {
-          debugItems.push({
+    for (const f of page.data.files ?? []) {
+      debugItems.push({
+        id: f.id,
+        name: f.name,
+        mimeType: f.mimeType,
+        parents: f.parents,
+        currentFolder: folder.name || "ROOT",
+        currentFolderPath: folder.path || "ROOT",
+        currentFolderId: folder.id,
+      });
+
+      if (!f.id || !f.name) continue;
+
+      if (f.mimeType === FOLDER_MIME) {
+        if (!visited.has(f.id)) {
+          visited.add(f.id);
+
+          queue.push({
             id: f.id,
             name: f.name,
-            mimeType: f.mimeType,
-            parents: f.parents,
-            currentFolder: folder.name || "ROOT",
-            currentFolderPath: folder.path || "ROOT",
-            currentFolderId: folder.id,
+            path: folder.path
+              ? `${folder.path} / ${f.name}`
+              : f.name,
           });
+        }
 
-          if (!f.id || !f.name) continue;
-
-          if (f.mimeType === FOLDER_MIME) {
-            if (!visited.has(f.id)) {
-              visited.add(f.id);
-
-              queue.push({
-                id: f.id,
-                name: f.name,
-                path: folder.path
-                  ? `${folder.path} / ${f.name}`
-                  : f.name,
-              });
-            }
-
-            continue;
-          }
+        continue;
+      }
 
           const extension = f.name.includes(".")
             ? (f.name.split(".").pop() ?? "").toLowerCase()
