@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  TYPE_LABEL,
   formatDate,
   groupByProduct,
   type MediaFile,
@@ -14,11 +13,9 @@ import {
   BackIcon,
   DownloadIcon,
   EyeIcon,
-  FileTextIcon,
   FolderIcon,
-  ImageIcon,
   LayersIcon,
-  SparkIcon,
+  PenIcon,
   VideoIcon,
 } from "./Icons";
 
@@ -31,12 +28,6 @@ interface GroupDef {
 
 const GROUPS: GroupDef[] = [
   {
-    key: "images",
-    label: "صور المنتج",
-    icon: <ImageIcon width={18} height={18} />,
-    match: (f) => f.fileType === "image" && !f.tags?.includes("design"),
-  },
-  {
     key: "videos",
     label: "فيديوهات المنتج",
     icon: <VideoIcon width={18} height={18} />,
@@ -44,15 +35,9 @@ const GROUPS: GroupDef[] = [
   },
   {
     key: "designs",
-    label: "تصاميم السوشيال ميديا",
-    icon: <SparkIcon width={18} height={18} />,
-    match: (f) => !!f.tags?.includes("design"),
-  },
-  {
-    key: "pdfs",
-    label: "كتالوجات ودلائل PDF",
-    icon: <FileTextIcon width={18} height={18} />,
-    match: (f) => f.fileType === "pdf",
+    label: "تصاميم المنتج",
+    icon: <PenIcon width={18} height={18} />,
+    match: (f) => f.fileType === "design",
   },
 ];
 
@@ -71,11 +56,11 @@ function FileRow({
       <button
         onClick={() => onPreview(file)}
         className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-cream-200 md:h-[4.5rem] md:w-32"
-        aria-label={`معاينة ${file.fileName}`}
+        aria-label={`معاينة ${file.name}`}
       >
         <img
-          src={file.thumbnail}
-          alt={file.fileName}
+          src={file.thumbnailUrl}
+          alt={file.name}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -88,12 +73,12 @@ function FileRow({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <TypeBadge type={file.fileType} />
+          <TypeBadge file={file} />
           <span className="lat text-[10px] font-bold text-ink-400">{file.size}</span>
         </div>
-        <h4 className="mt-1 truncate text-[13px] font-extrabold text-ink-950 md:text-sm">{file.fileName}</h4>
+        <h4 className="mt-1 truncate text-[13px] font-extrabold text-ink-950 md:text-sm">{file.name}</h4>
         <p className="mt-0.5 text-[10px] font-bold text-ink-400">
-          أضيف في {formatDate(file.date)}
+          آخر تحديث {formatDate(file.modifiedTime)}
         </p>
       </div>
 
@@ -101,7 +86,7 @@ function FileRow({
         <button
           onClick={async () => {
             setBusy(true);
-            toast(`جارٍ تحميل «${file.fileName}»`, "download");
+            toast(`جارٍ تحميل «${file.name}»`, "download");
             await downloadMedia(file);
             setBusy(false);
           }}
@@ -166,8 +151,8 @@ export default function ProductView({
           <div className="pointer-events-none absolute -bottom-20 left-24 h-44 w-44 rounded-full bg-brand-500/5" aria-hidden="true" />
           <div className="relative flex flex-col gap-6 p-6 md:flex-row md:items-center md:p-8">
             <img
-              src={group.files[0].thumbnail}
-              alt={group.name}
+              src={group.files[0].thumbnailUrl}
+              alt={group.code}
               className="h-36 w-full rounded-[1rem] border-4 border-white object-cover shadow-card md:h-32 md:w-44"
             />
             <div className="flex-1">
@@ -183,10 +168,9 @@ export default function ProductView({
               <h1 className="lat mt-3 text-4xl font-extrabold tracking-wide text-ink-950 md:text-5xl">
                 {group.code}
               </h1>
-              <p className="font-display mt-1.5 text-lg font-bold text-ink-800 md:text-xl">{group.name}</p>
               <p className="mt-2 text-[13px] font-bold text-ink-500">
-                <span className="lat">{group.files.length}</span> ملفًا جاهزًا للتحميل — صور، فيديوهات،
-                تصاميم ومستندات
+                <span className="lat">{group.files.length}</span> ملفًا جاهزًا — فيديوهات وتصاميم جاهزة
+                للنشر والتحميل
               </p>
             </div>
             <div className="shrink-0">
@@ -206,7 +190,7 @@ export default function ProductView({
         </div>
       </Reveal>
 
-      {/* المجموعات */}
+      {/* المجموعات: فيديوهات + تصاميم */}
       {GROUPS.map((g, gi) => {
         const items = group.files.filter(g.match);
         if (items.length === 0) return null;
@@ -232,35 +216,37 @@ export default function ProductView({
       })}
 
       {/* منتجات أخرى */}
-      <Reveal className="mt-12">
-        <div className="mb-3 flex items-center gap-2">
-          <FolderIcon width={18} height={18} className="text-brand-500" />
-          <h2 className="font-display text-lg font-extrabold text-ink-950">منتجات أخرى</h2>
-        </div>
-        <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:px-0">
-          {others.map((p) => (
-            <button
-              key={p.code}
-              onClick={() => onOpenProduct(p.code)}
-              className="group flex w-56 shrink-0 snap-start items-center gap-3 rounded-xl border border-cream-300/80 bg-cream-50 p-3 text-start shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/60 hover:shadow-lift active:scale-[0.97]"
-            >
-              <img
-                src={p.files[0].thumbnail}
-                alt={p.name}
-                loading="lazy"
-                className="h-14 w-16 shrink-0 rounded-lg object-cover"
-              />
-              <span className="min-w-0">
-                <span className="lat block text-xs font-extrabold tracking-wider text-brand-600">{p.code}</span>
-                <span className="block truncate text-xs font-bold text-ink-900">{p.name}</span>
-                <span className="mt-0.5 block text-[10px] font-bold text-ink-400">
-                  <span className="lat">{p.files.length}</span> ملفات · {TYPE_LABEL[p.files[0].fileType]}
+      {others.length > 0 && (
+        <Reveal className="mt-12">
+          <div className="mb-3 flex items-center gap-2">
+            <FolderIcon width={18} height={18} className="text-brand-500" />
+            <h2 className="font-display text-lg font-extrabold text-ink-950">منتجات أخرى</h2>
+          </div>
+          <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:px-0">
+            {others.map((p) => (
+              <button
+                key={p.code}
+                onClick={() => onOpenProduct(p.code)}
+                className="group flex w-56 shrink-0 snap-start items-center gap-3 rounded-xl border border-cream-300/80 bg-cream-50 p-3 text-start shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/60 hover:shadow-lift active:scale-[0.97]"
+              >
+                <img
+                  src={p.files[0].thumbnailUrl}
+                  alt={p.code}
+                  loading="lazy"
+                  className="h-14 w-16 shrink-0 rounded-lg object-cover"
+                />
+                <span className="min-w-0">
+                  <span className="lat block text-xs font-extrabold tracking-wider text-brand-600">{p.code}</span>
+                  <span className="block truncate text-xs font-bold text-ink-900">{p.category}</span>
+                  <span className="mt-0.5 block text-[10px] font-bold text-ink-400">
+                    <span className="lat">{p.files.length}</span> ملفات · فيديو وتصاميم
+                  </span>
                 </span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </Reveal>
+              </button>
+            ))}
+          </div>
+        </Reveal>
+      )}
     </div>
   );
 }

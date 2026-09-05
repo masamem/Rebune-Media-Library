@@ -153,3 +153,10 @@ export const RefreshIcon = (p: P) => (
     <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5" />
   </svg>
 );
+
+export const PenIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m14.5 5 4.5 4.5L8.5 20H4v-4.5L14.5 5Z" />
+    <path d="m12.5 7 4.5 4.5M4 20l1.2-4.5" />
+  </svg>
+);

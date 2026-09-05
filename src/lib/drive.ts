@@ -3,21 +3,23 @@
  * -------------------------------------------------------
  * الواجهة لا تتحدث مع Google مباشرة أبدًا، ولا ترى أي مفاتيح؛
  * كل ما يصلها هو JSON جاهز من الـ Serverless Function.
+ *
+ * لا توجد بيانات تجريبية — المصدر الوحيد هو /api/media.
  */
-import { MEDIA_FILES, type MediaFile } from "../data/media";
+import type { MediaFile, MediaSection } from "../data/media";
 
 /** شكل العنصر القادم من /api/media */
 export interface DriveItem {
   id: string;
   name: string;
-  mimeType: string;
-  extension: string;
+  extension?: string;
+  mimeType?: string;
   size: string;
-  modifiedTime: string;
-  folderName: string;
-  parentFolder: string;
+  modifiedTime?: string;
+  productCode: string;
   category: string;
-  fileType: "video" | "image" | "pdf" | "other";
+  mediaSection: MediaSection;
+  fileType: "video" | "design";
   thumbnailUrl: string;
   previewUrl: string;
   downloadUrl: string;
@@ -25,44 +27,35 @@ export interface DriveItem {
 
 const PLACEHOLDER = "/media/placeholder.svg";
 
-/** أسماء المنتجات المعروفة — لإعادة استخدام الأسماء العربية مع نفس أرقام الموديلات */
-const PRODUCT_NAMES: Record<string, string> = {};
-for (const f of MEDIA_FILES) PRODUCT_NAMES[f.productCode] = f.productName;
-
-/** استخراج رقم الموديل من اسم الملف: RE-2211.mp4 → RE-2211 */
-const CODE_RE = /re-?\d[\d-]*/i;
-
-export async function fetchDriveMedia(signal?: AbortSignal): Promise<DriveItem[]> {
+export async function fetchMediaLibrary(signal?: AbortSignal): Promise<MediaFile[]> {
   const res = await fetch("/api/media", { signal, headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`media API responded with ${res.status}`);
-  const data: { files?: DriveItem[] } = await res.json();
-  if (!data || !Array.isArray(data.files)) throw new Error("unexpected media API payload");
-  return data.files;
-}
 
-/** تحويل عنصر Drive إلى MediaFile المستخدم في كل الواجهة */
-export function toMediaFile(item: DriveItem): MediaFile {
-  const base = item.name.replace(/\.[^.]+$/, "").trim() || item.name;
-  const codeMatch = item.name.match(CODE_RE);
-  const productCode = codeMatch ? codeMatch[0].toUpperCase() : item.folderName.trim() || base;
-  const productName = PRODUCT_NAMES[productCode] ?? (codeMatch ? `منتج ${productCode}` : base);
-  const isDesign =
-    item.category === "تصاميم" || /social|تصميم|design|post|story|reel/i.test(item.name);
+  const data: { source?: string; files?: DriveItem[] } = await res.json();
+  if (!data || data.source !== "drive" || !Array.isArray(data.files)) {
+    throw new Error("unexpected media API payload");
+  }
 
-  return {
-    id: item.id,
-    productCode,
-    productName,
-    fileName: base,
-    category: item.category || "عام",
-    fileType: item.fileType,
-    extension: item.extension || undefined,
-    folderName: item.folderName || undefined,
-    thumbnail: item.thumbnailUrl || PLACEHOLDER,
-    previewUrl: item.previewUrl,
-    downloadUrl: item.downloadUrl,
-    size: item.size || "—",
-    date: item.modifiedTime || new Date().toISOString(),
-    tags: isDesign ? ["design"] : undefined,
-  };
+  const mapped: MediaFile[] = [];
+  for (const item of data.files) {
+    if (!item?.id || !item.productCode || !item.mediaSection || !item.fileType) continue;
+    mapped.push({
+      id: item.id,
+      productCode: item.productCode.trim(),
+      category: item.category?.trim() || "عام",
+      mediaSection: item.mediaSection,
+      fileType: item.fileType,
+      name: (item.name || "").replace(/\.[^.]+$/, "").trim() || item.name || "ملف",
+      size: item.size || "—",
+      thumbnailUrl: item.thumbnailUrl || PLACEHOLDER,
+      previewUrl: item.previewUrl || "",
+      downloadUrl: item.downloadUrl || "",
+      modifiedTime: item.modifiedTime || new Date().toISOString(),
+      extension: item.extension || undefined,
+    });
+  }
+
+  /* الأحدث أولًا */
+  mapped.sort((a, b) => b.modifiedTime.localeCompare(a.modifiedTime));
+  return mapped;
 }

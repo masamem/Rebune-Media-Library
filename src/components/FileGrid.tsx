@@ -15,7 +15,7 @@ function EmptyState({ onClear }: { onClear: () => void }) {
           لم نجد ملفات بهذا الاسم
         </h3>
         <p className="mt-2 text-sm font-semibold text-ink-500">
-          جرّب البحث برقم الموديل أو اسم المنتج.
+          جرّب البحث برقم المنتج مثل <span className="lat">RE-2211</span> أو باسم الملف.
         </p>
       </div>
       <button
@@ -35,7 +35,6 @@ export default function FileGrid({
   query,
   hasFilters,
   allProducts,
-  source,
   onClearAll,
   onPreview,
   onOpenProduct,
@@ -45,7 +44,6 @@ export default function FileGrid({
   query: string;
   hasFilters: boolean;
   allProducts: ProductGroup[];
-  source: "drive" | "demo";
   onClearAll: () => void;
   onPreview: (f: MediaFile) => void;
   onOpenProduct: (code: string) => void;
@@ -84,8 +82,8 @@ export default function FileGrid({
               >
                 <span className="relative block aspect-[4/3] overflow-hidden bg-cream-200">
                   <img
-                    src={p.files[0].thumbnail}
-                    alt={p.name}
+                    src={p.files[0].thumbnailUrl}
+                    alt={p.code}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
@@ -97,7 +95,7 @@ export default function FileGrid({
                   <span className="lat block text-[11px] font-extrabold tracking-wider text-brand-600">
                     {p.code}
                   </span>
-                  <span className="mt-0.5 block truncate text-xs font-bold text-ink-900">{p.name}</span>
+                  <span className="mt-0.5 block truncate text-xs font-bold text-ink-900">{p.category}</span>
                 </span>
               </button>
             ))}
@@ -111,15 +109,11 @@ export default function FileGrid({
           <h2 className="font-display text-xl font-extrabold text-ink-950 md:text-2xl">{title}</h2>
           <CountPill n={files.length} />
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold ${
-              source === "drive"
-                ? "bg-emerald-500/10 text-emerald-700"
-                : "bg-amber-500/15 text-amber-700"
-            }`}
-            title={source === "drive" ? "الملفات مقروءة مباشرة من Google Drive" : "بيانات تجريبية محلية"}
+            className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-extrabold text-emerald-700"
+            title="الملفات مقروءة مباشرة من Google Drive"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            {source === "drive" ? "متزامن مع Google Drive" : "نسخة تجريبية"}
+            متزامن مع Google Drive
           </span>
           {hasFilters && (
             <button

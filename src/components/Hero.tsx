@@ -1,7 +1,6 @@
+import { useMemo } from "react";
 import { FEATURED, groupByProduct, type MediaFile } from "../data/media";
-import { PlayIcon, SearchIcon, SunMark, XIcon } from "./Icons";
-
-const SUGGESTIONS = ["RE-2211", "RE-3320", "عروض", "تجميل"];
+import { PlayIcon, PenIcon, SearchIcon, SunMark, XIcon } from "./Icons";
 
 export default function Hero({
   query,
@@ -15,8 +14,14 @@ export default function Hero({
   loading: boolean;
 }) {
   const videos = files.filter((f) => f.fileType === "video").length;
-  const images = files.filter((f) => f.fileType !== "video").length;
+  const designs = files.filter((f) => f.fileType === "design").length;
   const products = groupByProduct(files).length;
+
+  /* اقتراحات بحث حقيقية من أرقام المنتجات الموجودة */
+  const suggestions = useMemo(
+    () => groupByProduct(files).slice(0, 3).map((p) => p.code),
+    [files],
+  );
 
   return (
     <section className="relative overflow-hidden">
@@ -37,15 +42,14 @@ export default function Hero({
             مكتبة الوسائط الرسمية
           </span>
 
-          <h1 className="font-display mt-5 text-[2rem] font-extrabold leading-[1.25] text-ink-950 md:text-[2.9rem] md:leading-[1.2]">
-            مكتبة <span className="lat">Rebune</span>
+          <h1 className="font-display mt-5 text-[2rem] font-extrabold leading-[1.3] text-ink-950 md:text-[2.8rem] md:leading-[1.25]">
+            مكتبة ريبون
             <br />
-            للصور و<mark className="bg-transparent text-brand-600">الفيديوهات</mark>
+            <mark className="bg-transparent text-brand-600">للفيديوهات والتصاميم</mark>
           </h1>
 
           <p className="mt-4 max-w-md text-[15px] font-medium leading-8 text-ink-700 md:text-base">
-            كل ما تحتاجه من صور وتصاميم وفيديوهات منتجات <span className="lat font-bold">Rebune</span> في
-            مكان واحد.
+            كل فيديوهات وتصاميم منتجات ريبون في مكان واحد.
           </p>
 
           {/* البحث — أهم عنصر */}
@@ -61,8 +65,8 @@ export default function Hero({
               type="search"
               value={query}
               onChange={(e) => onQuery(e.target.value)}
-              placeholder="ابحث باسم المنتج أو رقم الموديل..."
-              aria-label="ابحث باسم المنتج أو رقم الموديل"
+              placeholder="ابحث برقم المنتج مثل RE-2211 أو باسم الملف..."
+              aria-label="ابحث برقم المنتج أو اسم الملف أو التصنيف"
               className="h-15 w-full rounded-full border-2 border-cream-300 bg-cream-50 pe-14 ps-14 text-[15px] font-semibold text-ink-950 shadow-card placeholder:font-medium placeholder:text-ink-400 transition-all duration-300 focus:border-brand-500 focus:shadow-lift focus:outline-none md:h-16 md:text-base"
             />
             {query && (
@@ -77,29 +81,31 @@ export default function Hero({
             )}
           </form>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-[13px] font-semibold text-ink-500">
-            <span>جرّب:</span>
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                onClick={() => onQuery(s)}
-                className={`lat rounded-full border px-3 py-1 transition-all duration-200 active:scale-95 ${
-                  query === s
-                    ? "border-brand-500 bg-brand-500 text-white"
-                    : "border-cream-300 bg-cream-50 text-ink-700 hover:border-brand-400 hover:text-brand-600"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+          {suggestions.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-[13px] font-semibold text-ink-500">
+              <span>جرّب:</span>
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onQuery(s)}
+                  className={`lat rounded-full border px-3 py-1 transition-all duration-200 active:scale-95 ${
+                    query === s
+                      ? "border-brand-500 bg-brand-500 text-white"
+                      : "border-cream-300 bg-cream-50 text-ink-700 hover:border-brand-400 hover:text-brand-600"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {/* أرقام سريعة */}
+          {/* أرقام سريعة — المنتجات / الفيديوهات / التصاميم */}
           <dl className="mt-8 flex max-w-md items-center justify-between gap-3 border-t border-cream-300/70 pt-5">
             {[
               { n: products, l: "منتج" },
               { n: videos, l: "فيديو" },
-              { n: images, l: "صورة وتصميم وملف" },
+              { n: designs, l: "تصميم" },
             ].map((s) => (
               <div key={s.l} className="text-center">
                 <dt className="lat text-2xl font-extrabold text-ink-950 md:text-3xl">
@@ -122,33 +128,24 @@ export default function Hero({
             />
             <span className="absolute bottom-4 start-4 inline-flex items-center gap-2 rounded-full bg-ink-950/80 px-3.5 py-1.5 text-xs font-bold text-cream-50 backdrop-blur-sm">
               <PlayIcon width={13} height={13} className="text-brand-400" />
-              فيديو Derma Glow — جديد
+              فيديوهات جاهزة للنشر
             </span>
           </div>
 
-          <figure
-            className="animate-floaty absolute -bottom-2 start-0 w-44 rotate-[5deg] rounded-xl border-8 border-cream-50 bg-cream-50 shadow-lift"
-            style={{ "--tilt": "5deg" } as React.CSSProperties}
-          >
-            <img src={FEATURED.heroSmall1} alt="" className="aspect-[4/3] w-full rounded-md object-cover" />
-            <figcaption className="lat py-1.5 text-center text-[10px] font-bold tracking-wider text-ink-500">
-              RE-3320 · PowerMix
-            </figcaption>
-          </figure>
+          <div className="animate-floaty absolute -top-1 end-6 w-44 overflow-hidden rounded-2xl border-4 border-cream-50 shadow-lift">
+            <img src={FEATURED.heroSmall1} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
+            <span className="absolute bottom-2 start-2 inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-2.5 py-1 text-[10px] font-extrabold text-white">
+              <PenIcon width={11} height={11} />
+              تصاميم جاهزة
+            </span>
+          </div>
 
-          <figure
-            className="animate-floaty absolute end-0 top-0 w-40 rotate-[-6deg] rounded-xl border-8 border-cream-50 bg-cream-50 shadow-lift"
-            style={{ "--tilt": "-6deg", animationDelay: "1.4s" } as React.CSSProperties}
+          <div
+            className="animate-floaty absolute bottom-6 end-0 w-40 overflow-hidden rounded-2xl border-4 border-cream-50 shadow-lift"
+            style={{ animationDelay: "1.4s" }}
           >
-            <img src={FEATURED.heroSmall2} alt="" className="aspect-[4/3] w-full rounded-md object-cover" />
-            <figcaption className="lat py-1.5 text-center text-[10px] font-bold tracking-wider text-ink-500">
-              RE-2730 · Tempo
-            </figcaption>
-          </figure>
-
-          <span className="absolute end-10 bottom-14 grid h-14 w-14 rotate-12 place-items-center rounded-2xl bg-brand-500 text-white shadow-lift">
-            <SunMark className="h-7 w-7" />
-          </span>
+            <img src={FEATURED.heroSmall2} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
+          </div>
         </div>
       </div>
     </section>
