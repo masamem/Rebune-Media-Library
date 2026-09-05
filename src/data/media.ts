@@ -56,10 +56,11 @@ const VIDEO_BASE = "https://commondatastorage.googleapis.com/gtv-videos-bucket/s
 const PDF_URL = "/downloads/rebune-guide.pdf";
 
 export const FEATURED = {
-  heroMain: IMG.beautyLife,
-  heroSmall1: IMG.blender,
-  heroSmall2: IMG.kettle,
-  videosCard: IMG.kitchenLife,
+  heroMain: "/media/hero-main.svg",
+  heroSmall1: "/media/hero-top.svg",
+  heroSmall2: "/media/hero-bottom.svg",
+  videosCard: "/media/kitchen-life.svg",
+  designsCard: "/media/promo.svg",
 };
 
 /* ------------------------------ demo files ------------------------------- */
