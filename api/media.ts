@@ -345,10 +345,7 @@ export default async function handler(
           const thumbnailUrl =
             `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
 
-          const previewUrl =
-            fileType === "video" || isPdf
-              ? `https://drive.google.com/file/d/${file.id}/preview`
-              : `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
+          const previewUrl = `/api/file?id=${file.id}`;
 
           const downloadUrl =
             file.webContentLink ??
