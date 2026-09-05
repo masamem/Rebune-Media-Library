@@ -37,11 +37,9 @@ export default function Hero({
             مكتبة الوسائط الرسمية
           </span>
 
-          <h1 className="font-display mt-5 text-[2rem] font-extrabold leading-[1.25] text-ink-950 md:text-[2.9rem] md:leading-[1.2]">
-            مكتبة <span className="lat">Rebune</span>
-            <br />
-            للصور و<mark className="bg-transparent text-brand-600">الفيديوهات</mark>
-          </h1>
+          <h1 className="font-display mt-5 text-[2rem] font-extrabold leading-[1.3] text-ink-950 md:text-[2.8rem] md:leading-[1.25]">
+  مكتبة وسائط ريبون
+</h1>
 
           <p className="mt-4 max-w-md text-[15px] font-medium leading-8 text-ink-700 md:text-base">
             كل ما تحتاجه من صور وتصاميم وفيديوهات منتجات <span className="lat font-bold">Rebune</span> في
