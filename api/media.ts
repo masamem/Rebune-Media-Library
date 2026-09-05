@@ -12,17 +12,22 @@ function esc(id: string): string {
 
 function formatSize(bytes?: string | null): string {
   const b = Number(bytes ?? 0);
+
   if (!Number.isFinite(b) || b <= 0) return "—";
   if (b < 1024) return `${b} B`;
   if (b < 1024 ** 2) return `${Math.round(b / 1024)} KB`;
   if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)} MB`;
+
   return `${(b / 1024 ** 3).toFixed(2)} GB`;
 }
 
-function kindOf(mimeType: string) {
+type FileType = "video" | "image" | "pdf" | "other";
+
+function kindOf(mimeType: string): FileType {
   if (mimeType.startsWith("video/")) return "video";
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType === "application/pdf") return "pdf";
+
   return "other";
 }
 
@@ -32,12 +37,54 @@ interface QueueItem {
   path: string;
 }
 
+function getPathParts(path: string): string[] {
+  return path
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function getCategory(path: string): string {
+  const parts = getPathParts(path);
+
+  const category = parts.find(
+    (part) => part === "تجميلي" || part === "منزلي"
+  );
+
+  return category ?? "عام";
+}
+
+function getProductCode(path: string, fileName: string): string {
+  const parts = getPathParts(path);
+
+  const folderProduct = parts.find((part) =>
+    /^RE-[A-Z0-9-]+$/i.test(part)
+  );
+
+  if (folderProduct) return folderProduct.toUpperCase();
+
+  const fileMatch = fileName.match(/RE-[A-Z0-9-]+/i);
+
+  return fileMatch ? fileMatch[0].toUpperCase() : "";
+}
+
+function getMediaSection(path: string): string {
+  const parts = getPathParts(path);
+
+  const section = parts.find((part) =>
+    ["صور", "فيديوهات", "تصاميم", "PDF"].includes(part)
+  );
+
+  return section ?? "";
+}
+
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
+
     return res.status(405).json({
       source: "error",
       error: "method_not_allowed",
@@ -69,7 +116,7 @@ export default async function handler(
 
     const rootFolder = await drive.files.get({
       fileId: rootId,
-      fields: "id,name,mimeType,parents,driveId",
+      fields: "id,name,mimeType",
       supportsAllDrives: true,
     });
 
@@ -81,91 +128,92 @@ export default async function handler(
       },
     ];
 
-const files: Record<string, unknown>[] = [];
-const debugItems: Record<string, unknown>[] = [];
-const visited = new Set<string>([rootId]);
+    const visited = new Set<string>([rootId]);
+    const files: Record<string, unknown>[] = [];
 
-while (queue.length > 0) {
-  const folder = queue.shift()!;
-  let pageToken: string | undefined = undefined;
+    while (queue.length > 0) {
+      const folder = queue.shift()!;
+      let pageToken: string | undefined = undefined;
 
-  do {
-    const page: any = await drive.files.list({
-      q: `'${esc(folder.id)}' in parents and trashed = false`,
-      fields: FIELDS,
-      pageSize: 1000,
-      pageToken,
-      supportsAllDrives: true,
-      includeItemsFromAllDrives: true,
-      orderBy: "folder,name",
-    });
+      do {
+        const page: any = await drive.files.list({
+          q: `'${esc(folder.id)}' in parents and trashed = false`,
+          fields: FIELDS,
+          pageSize: 1000,
+          pageToken,
+          supportsAllDrives: true,
+          includeItemsFromAllDrives: true,
+          orderBy: "folder,name",
+        });
 
-    for (const f of page.data.files ?? []) {
-      debugItems.push({
-        id: f.id,
-        name: f.name,
-        mimeType: f.mimeType,
-        parents: f.parents,
-        currentFolder: folder.name || "ROOT",
-        currentFolderPath: folder.path || "ROOT",
-        currentFolderId: folder.id,
-      });
+        for (const f of page.data.files ?? []) {
+          if (!f.id || !f.name) continue;
 
-      if (!f.id || !f.name) continue;
+          if (f.mimeType === FOLDER_MIME) {
+            if (!visited.has(f.id)) {
+              visited.add(f.id);
 
-      if (f.mimeType === FOLDER_MIME) {
-        if (!visited.has(f.id)) {
-          visited.add(f.id);
+              queue.push({
+                id: f.id,
+                name: f.name,
+                path: folder.path
+                  ? `${folder.path} / ${f.name}`
+                  : f.name,
+              });
+            }
 
-          queue.push({
-            id: f.id,
-            name: f.name,
-            path: folder.path
-              ? `${folder.path} / ${f.name}`
-              : f.name,
-          });
-        }
-
-        continue;
-      }
+            continue;
+          }
 
           const extension = f.name.includes(".")
             ? (f.name.split(".").pop() ?? "").toLowerCase()
             : "";
 
-          const kind = kindOf(f.mimeType ?? "");
+          const fileType = kindOf(f.mimeType ?? "");
 
-          const thumb =
+          const category = getCategory(folder.path);
+          const productCode = getProductCode(folder.path, f.name);
+          const mediaSection = getMediaSection(folder.path);
+
+          const thumbnailUrl =
             `https://drive.google.com/thumbnail?id=${f.id}&sz=w1000`;
+
+          const previewUrl =
+            fileType === "video" || fileType === "pdf"
+              ? `https://drive.google.com/file/d/${f.id}/preview`
+              : fileType === "image"
+                ? `https://drive.google.com/thumbnail?id=${f.id}&sz=w1600`
+                : f.webViewLink ?? "";
+
+          const downloadUrl =
+            f.webContentLink ??
+            `https://drive.google.com/uc?export=download&id=${f.id}`;
 
           files.push({
             id: f.id,
             name: f.name,
+
             mimeType: f.mimeType ?? "",
             extension,
             size: formatSize(f.size),
             modifiedTime: f.modifiedTime ?? "",
 
+            category,
+            productCode,
+            mediaSection,
+
             folderName: folder.name,
             parentFolder: folder.path,
 
-            fileType: kind,
+            fileType,
 
             thumbnailUrl:
-              kind === "image" || kind === "video"
-                ? thumb
+              fileType === "image" || fileType === "video"
+                ? thumbnailUrl
                 : f.thumbnailLink ?? "",
 
-            previewUrl:
-              kind === "video" || kind === "pdf"
-                ? `https://drive.google.com/file/d/${f.id}/preview`
-                : kind === "image"
-                  ? `https://drive.google.com/thumbnail?id=${f.id}&sz=w1600`
-                  : f.webViewLink ?? "",
-
-            downloadUrl:
-              f.webContentLink ??
-              `https://drive.google.com/uc?export=download&id=${f.id}`,
+            previewUrl,
+            downloadUrl,
           });
         }
 
@@ -175,14 +223,14 @@ while (queue.length > 0) {
 
     res.setHeader(
       "Cache-Control",
-      "no-store"
+      "s-maxage=120, stale-while-revalidate=600"
     );
 
     return res.status(200).json({
       source: "drive",
       updatedAt: new Date().toISOString(),
       rootFolder: rootFolder.data,
-      debugItems,
+      count: files.length,
       files,
     });
   } catch (err) {
