@@ -61,15 +61,27 @@ export default function PreviewModal({
         {/* الوسائط */}
         <div className="shrink-0 overflow-hidden bg-ink-950">
           {file.fileType === "video" ? (
-            <video
-              key={file.id}
-              src={file.previewUrl}
-              poster={file.thumbnail}
-              controls
-              autoPlay
-              playsInline
-              className="aspect-video w-full"
-            />
+            file.previewUrl.includes("drive.google.com/file/d/") ? (
+              /* فيديو مستضاف على Google Drive — مشغّل Drive داخل الموقع */
+              <iframe
+                key={file.id}
+                src={file.previewUrl}
+                title={file.fileName}
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                className="aspect-video w-full"
+              />
+            ) : (
+              <video
+                key={file.id}
+                src={file.previewUrl}
+                poster={file.thumbnail}
+                controls
+                autoPlay
+                playsInline
+                className="aspect-video w-full"
+              />
+            )
           ) : file.fileType === "image" ? (
             <div className="grid max-h-[52dvh] place-items-center overflow-auto bg-cream-200">
               <img
@@ -97,7 +109,7 @@ export default function PreviewModal({
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-5 md:p-6">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <TypeBadge type={file.fileType} duration={file.duration} />
+              <TypeBadge type={file.fileType} duration={file.duration} ext={file.extension} />
               <span className="rounded-md bg-cream-200 px-2 py-1 text-[10px] font-extrabold text-ink-700">
                 {file.category}
               </span>

@@ -6,8 +6,9 @@
  * change per file (or a fetch from the Drive API).
  */
 
-export type Category = "تجميل" | "منزلي" | "عروض" | "هوية الشركة";
-export type FileType = "video" | "image" | "pdf";
+/** التصنيف ديناميكي — يأتي من أسماء مجلدات Google Drive أو البيانات التجريبية */
+export type Category = string;
+export type FileType = "video" | "image" | "pdf" | "other";
 export type Section = "all" | "videos" | "gallery" | "designs" | "latest";
 
 export interface MediaFile {
@@ -17,11 +18,15 @@ export interface MediaFile {
   fileName: string;
   category: Category;
   fileType: FileType;
+  /** امتداد الملف: mp4 / mov / jpg / pdf … */
+  extension?: string;
+  /** اسم المجلد داخل Google Drive */
+  folderName?: string;
   /** card thumbnail */
   thumbnail: string;
-  /** in-site preview (mp4 stream / full image / pdf) */
+  /** in-site preview (mp4 stream / full image / pdf / Drive preview) */
   previewUrl: string;
-  /** replace with Google Drive download link later */
+  /** Google Drive download link (or local demo file) */
   downloadUrl: string;
   size: string;
   /** ISO date */
@@ -231,6 +236,13 @@ export const MEDIA_FILES: MediaFile[] = [
   },
 ];
 
+/* استكمال امتدادات الملفات التجريبية لتظهر على شارات النوع وفلاتر الامتداد */
+for (const f of MEDIA_FILES) {
+  if (!f.extension) {
+    f.extension = f.fileType === "video" ? "mp4" : f.fileType === "pdf" ? "pdf" : undefined;
+  }
+}
+
 /* ------------------------------- selectors ------------------------------- */
 
 export const CATEGORIES: Category[] = ["تجميل", "منزلي", "عروض", "هوية الشركة"];
@@ -239,7 +251,11 @@ export const TYPE_LABEL: Record<FileType, string> = {
   video: "فيديو",
   image: "صورة",
   pdf: "PDF",
+  other: "أخرى",
 };
+
+/** القيم العامة للنوع — أي قيمة غيرها تُعامل كامتداد (MP4 / MOV …) */
+export const KIND_VALUES: readonly string[] = ["video", "image", "pdf", "other"];
 
 export const SECTION_LABEL: Record<Section, string> = {
   all: "كل الملفات",
@@ -259,24 +275,50 @@ export function matchesQuery(file: MediaFile, query: string): boolean {
     normalize(file.productCode).includes(q) ||
     normalize(file.productName).includes(q) ||
     normalize(file.fileName).includes(q) ||
-    normalize(file.category).includes(q)
+    normalize(file.category).includes(q) ||
+    normalize(file.folderName ?? "").includes(q) ||
+    normalize(file.extension ?? "").includes(q)
   );
 }
 
+/**
+ * فلتر النوع يقبل قيمة عامة (video / image / pdf / other)
+ * أو امتدادًا مباشرًا مثل "mp4" أو "mov".
+ */
 export function filterFiles(
   files: MediaFile[],
-  opts: { section: Section; category: Category | "all"; fileType: FileType | "all"; query: string },
+  opts: { section: Section; category: string; fileType: string; query: string },
 ): MediaFile[] {
   let list = files;
   if (opts.section === "videos") list = list.filter((f) => f.fileType === "video");
   else if (opts.section === "gallery") list = list.filter((f) => f.fileType === "image");
-  else if (opts.section === "designs") list = list.filter((f) => f.tags?.includes("design"));
+  else if (opts.section === "designs")
+    list = list.filter((f) => f.tags?.includes("design") || f.category === "تصاميم");
   else if (opts.section === "latest") list = list.slice(0, 8);
 
   if (opts.category !== "all") list = list.filter((f) => f.category === opts.category);
-  if (opts.fileType !== "all") list = list.filter((f) => f.fileType === opts.fileType);
+  if (opts.fileType !== "all") {
+    if (KIND_VALUES.includes(opts.fileType)) {
+      list = list.filter((f) => f.fileType === opts.fileType);
+    } else {
+      list = list.filter((f) => (f.extension ?? "").toLowerCase() === opts.fileType.toLowerCase());
+    }
+  }
   if (opts.query.trim()) list = list.filter((f) => matchesQuery(f, opts.query));
   return list;
+}
+
+/** التصنيفات الموجودة فعليًا في البيانات (بدل قائمة ثابتة) */
+export function categoriesOf(files: MediaFile[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const f of files) {
+    if (!seen.has(f.category)) {
+      seen.add(f.category);
+      out.push(f.category);
+    }
+  }
+  return out;
 }
 
 export interface ProductGroup {

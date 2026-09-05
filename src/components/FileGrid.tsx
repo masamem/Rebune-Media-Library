@@ -35,6 +35,7 @@ export default function FileGrid({
   query,
   hasFilters,
   allProducts,
+  source,
   onClearAll,
   onPreview,
   onOpenProduct,
@@ -44,6 +45,7 @@ export default function FileGrid({
   query: string;
   hasFilters: boolean;
   allProducts: ProductGroup[];
+  source: "drive" | "demo";
   onClearAll: () => void;
   onPreview: (f: MediaFile) => void;
   onOpenProduct: (code: string) => void;
@@ -108,10 +110,21 @@ export default function FileGrid({
         <div className="mb-5 flex flex-wrap items-center gap-3">
           <h2 className="font-display text-xl font-extrabold text-ink-950 md:text-2xl">{title}</h2>
           <CountPill n={files.length} />
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold ${
+              source === "drive"
+                ? "bg-emerald-500/10 text-emerald-700"
+                : "bg-amber-500/15 text-amber-700"
+            }`}
+            title={source === "drive" ? "الملفات مقروءة مباشرة من Google Drive" : "بيانات تجريبية محلية"}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+            {source === "drive" ? "متزامن مع Google Drive" : "نسخة تجريبية"}
+          </span>
           {hasFilters && (
             <button
               onClick={onClearAll}
-              className="mr-auto flex items-center gap-1.5 rounded-full border border-cream-300 bg-cream-50 px-3.5 py-1.5 text-xs font-extrabold text-ink-700 transition-all hover:border-brand-500 hover:text-brand-600 active:scale-95"
+              className="ms-auto flex items-center gap-1.5 rounded-full border border-cream-300 bg-cream-50 px-3.5 py-1.5 text-xs font-extrabold text-ink-700 transition-all hover:border-brand-500 hover:text-brand-600 active:scale-95"
             >
               <XIcon width={13} height={13} />
               إعادة تعيين

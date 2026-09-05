@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  MEDIA_FILES,
   TYPE_LABEL,
   formatDate,
   groupByProduct,
@@ -125,18 +124,20 @@ function FileRow({
 
 export default function ProductView({
   group,
+  files,
   onBack,
   onPreview,
   onOpenProduct,
 }: {
   group: ProductGroup;
+  files: MediaFile[];
   onBack: () => void;
   onPreview: (f: MediaFile) => void;
   onOpenProduct: (code: string) => void;
 }) {
   const toast = useToast();
   const [downloadingAll, setDownloadingAll] = useState(false);
-  const others = groupByProduct(MEDIA_FILES).filter((g) => g.code !== group.code);
+  const others = groupByProduct(files).filter((g) => g.code !== group.code);
 
   const handleDownloadAll = async () => {
     setDownloadingAll(true);

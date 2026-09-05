@@ -1,4 +1,4 @@
-import { FEATURED, MEDIA_FILES, groupByProduct } from "../data/media";
+import { FEATURED, groupByProduct, type MediaFile } from "../data/media";
 import { PlayIcon, SearchIcon, SunMark, XIcon } from "./Icons";
 
 const SUGGESTIONS = ["RE-2211", "RE-3320", "عروض", "تجميل"];
@@ -6,13 +6,17 @@ const SUGGESTIONS = ["RE-2211", "RE-3320", "عروض", "تجميل"];
 export default function Hero({
   query,
   onQuery,
+  files,
+  loading,
 }: {
   query: string;
   onQuery: (q: string) => void;
+  files: MediaFile[];
+  loading: boolean;
 }) {
-  const videos = MEDIA_FILES.filter((f) => f.fileType === "video").length;
-  const images = MEDIA_FILES.filter((f) => f.fileType !== "video").length;
-  const products = groupByProduct(MEDIA_FILES).length;
+  const videos = files.filter((f) => f.fileType === "video").length;
+  const images = files.filter((f) => f.fileType !== "video").length;
+  const products = groupByProduct(files).length;
 
   return (
     <section className="relative overflow-hidden">
@@ -98,7 +102,9 @@ export default function Hero({
               { n: images, l: "صورة وتصميم وملف" },
             ].map((s) => (
               <div key={s.l} className="text-center">
-                <dt className="lat text-2xl font-extrabold text-ink-950 md:text-3xl">{s.n}</dt>
+                <dt className="lat text-2xl font-extrabold text-ink-950 md:text-3xl">
+                  {loading ? "…" : s.n}
+                </dt>
                 <dd className="mt-0.5 text-[11px] font-bold text-ink-500 md:text-xs">{s.l}</dd>
               </div>
             ))}

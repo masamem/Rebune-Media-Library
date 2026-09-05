@@ -1,4 +1,5 @@
-import { CATEGORIES, TYPE_LABEL, type Category, type FileType, type MediaFile } from "../data/media";
+import { useMemo } from "react";
+import { TYPE_LABEL, categoriesOf, type MediaFile } from "../data/media";
 
 function Chip({
   label,
@@ -35,6 +36,10 @@ function Chip({
   );
 }
 
+/**
+ * فلاتر ديناميكية: التصنيفات تأتي من البيانات نفسها (مجلدات Google Drive)،
+ * والنوع يشمل القيم العامة (فيديو/صورة/PDF/أخرى) + امتدادات الفيديو (MP4/MOV…).
+ */
 export default function FilterChips({
   files,
   category,
@@ -43,13 +48,31 @@ export default function FilterChips({
   onFileType,
 }: {
   files: MediaFile[];
-  category: Category | "all";
-  fileType: FileType | "all";
-  onCategory: (c: Category | "all") => void;
-  onFileType: (t: FileType | "all") => void;
+  category: string;
+  fileType: string;
+  onCategory: (c: string) => void;
+  onFileType: (t: string) => void;
 }) {
   const countBy = (pred: (f: MediaFile) => boolean) => files.filter(pred).length;
-  const types: (FileType | "all")[] = ["all", "video", "image", "pdf"];
+
+  const categories = useMemo(() => categoriesOf(files), [files]);
+
+  const kinds = useMemo(
+    () =>
+      (["video", "image", "pdf", "other"] as const).filter((t) =>
+        files.some((f) => f.fileType === t),
+      ),
+    [files],
+  );
+
+  /** امتدادات الفيديو الموجودة فعليًا: mp4 / mov / webm … */
+  const videoExts = useMemo(() => {
+    const set = new Set<string>();
+    for (const f of files) {
+      if (f.fileType === "video" && f.extension) set.add(f.extension.toLowerCase());
+    }
+    return [...set].sort();
+  }, [files]);
 
   return (
     <div className="space-y-3">
@@ -57,7 +80,7 @@ export default function FilterChips({
         <span className="w-14 shrink-0 text-[11px] font-extrabold text-ink-400">التصنيف</span>
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
           <Chip label="الكل" active={category === "all"} onClick={() => onCategory("all")} />
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <Chip
               key={c}
               label={c}
@@ -72,13 +95,23 @@ export default function FilterChips({
       <div className="flex items-center gap-3">
         <span className="w-14 shrink-0 text-[11px] font-extrabold text-ink-400">النوع</span>
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
-          {types.map((t) => (
+          <Chip label="الكل" active={fileType === "all"} onClick={() => onFileType("all")} />
+          {kinds.map((t) => (
             <Chip
               key={t}
-              label={t === "all" ? "الكل" : TYPE_LABEL[t]}
-              count={t === "all" ? undefined : countBy((f) => f.fileType === t)}
+              label={TYPE_LABEL[t]}
+              count={countBy((f) => f.fileType === t)}
               active={fileType === t}
               onClick={() => onFileType(fileType === t ? "all" : t)}
+            />
+          ))}
+          {videoExts.map((ext) => (
+            <Chip
+              key={ext}
+              label={ext.toUpperCase()}
+              count={countBy((f) => (f.extension ?? "").toLowerCase() === ext)}
+              active={fileType === ext}
+              onClick={() => onFileType(fileType === ext ? "all" : ext)}
             />
           ))}
         </div>
