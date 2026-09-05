@@ -347,10 +347,8 @@ export default async function handler(
 
           const previewUrl = `/api/file?id=${file.id}`;
 
-          const downloadUrl =
-            file.webContentLink ??
-            `https://drive.google.com/uc?export=download&id=${file.id}`;
-
+          const downloadUrl = `/api/file?id=${file.id}`;
+          
           files.push({
             id: file.id,
             name: file.name,
