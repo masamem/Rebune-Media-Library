@@ -43,10 +43,8 @@ export default function Hero({
           </span>
 
           <h1 className="font-display mt-5 text-[2rem] font-extrabold leading-[1.3] text-ink-950 md:text-[2.8rem] md:leading-[1.25]">
-            مكتبة ريبون
-            <br />
-            <mark className="bg-transparent text-brand-600">للفيديوهات والتصاميم</mark>
-          </h1>
+  مكتبة وسائط ريبون
+</h1>
 
           <p className="mt-4 max-w-md text-[15px] font-medium leading-8 text-ink-700 md:text-base">
             كل فيديوهات وتصاميم منتجات ريبون في مكان واحد.
