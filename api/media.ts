@@ -1,3 +1,24 @@
+/**
+ * /api/media — Vercel Serverless Function
+ *
+ * Google Drive structure:
+ *
+ * rebune-media-library
+ * ├── تجميلي
+ * │   ├── فيديوهات
+ * │   └── تصاميم
+ * └── منزلي
+ *     ├── فيديوهات
+ *     └── تصاميم
+ *
+ * Product code is extracted from the file name.
+ *
+ * Examples:
+ * RE-2211-video-01.mp4  -> RE-2211
+ * RE-2211-design-01.jpg -> RE-2211
+ * RE-3312-catalog.pdf   -> RE-3312
+ */
+
 import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
@@ -6,79 +27,117 @@ const FOLDER_MIME = "application/vnd.google-apps.folder";
 const FIELDS =
   "nextPageToken, files(id, name, mimeType, size, modifiedTime, parents, thumbnailLink, webViewLink, webContentLink)";
 
-function esc(id: string): string {
-  return id.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+const CATEGORY_MAP: Record<string, string> = {
+  "تجميلي": "تجميلي",
+  "تجميل": "تجميلي",
+  beauty: "تجميلي",
+
+  "منزلي": "منزلي",
+  home: "منزلي",
+};
+
+const VIDEO_FOLDER_NAMES = new Set([
+  "فيديوهات",
+  "فيديو",
+  "videos",
+  "video",
+]);
+
+const DESIGN_FOLDER_NAMES = new Set([
+  "تصاميم",
+  "تصميم",
+  "designs",
+  "design",
+]);
+
+function categoryOf(name: string): string {
+  const value = name.trim();
+
+  return (
+    CATEGORY_MAP[value] ??
+    CATEGORY_MAP[value.toLowerCase()] ??
+    value
+  );
+}
+
+function sectionOf(
+  name: string
+): "فيديوهات" | "تصاميم" | null {
+  const value = name.trim();
+  const lower = value.toLowerCase();
+
+  if (
+    VIDEO_FOLDER_NAMES.has(value) ||
+    VIDEO_FOLDER_NAMES.has(lower)
+  ) {
+    return "فيديوهات";
+  }
+
+  if (
+    DESIGN_FOLDER_NAMES.has(value) ||
+    DESIGN_FOLDER_NAMES.has(lower)
+  ) {
+    return "تصاميم";
+  }
+
+  return null;
+}
+
+/**
+ * Extract product code from filename.
+ *
+ * Examples:
+ * RE-2211-video-01.mp4  -> RE-2211
+ * RE-1-102-video-01.mp4 -> RE-1-102
+ * RE-3312-catalog.pdf   -> RE-3312
+ */
+function extractProductCode(fileName: string): string {
+  const name = fileName.trim();
+
+  const match = name.match(
+    /^(RE-\d+(?:-\d+)*)(?:-|_|\.|$)/i
+  );
+
+  return match ? match[1].toUpperCase() : "";
 }
 
 function formatSize(bytes?: string | null): string {
   const b = Number(bytes ?? 0);
 
-  if (!Number.isFinite(b) || b <= 0) return "—";
-  if (b < 1024) return `${b} B`;
-  if (b < 1024 ** 2) return `${Math.round(b / 1024)} KB`;
-  if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)} MB`;
+  if (!Number.isFinite(b) || b <= 0) {
+    return "—";
+  }
+
+  if (b < 1024) {
+    return `${b} B`;
+  }
+
+  if (b < 1024 ** 2) {
+    return `${Math.round(b / 1024)} KB`;
+  }
+
+  if (b < 1024 ** 3) {
+    return `${(b / 1024 ** 2).toFixed(1)} MB`;
+  }
 
   return `${(b / 1024 ** 3).toFixed(2)} GB`;
 }
 
-type FileType = "video" | "design" | "pdf" | "other";
-
-function kindOf(mimeType: string, mediaSection: string): FileType {
-  if (mimeType.startsWith("video/")) return "video";
-
-  if (mediaSection === "تصاميم" && mimeType.startsWith("image/")) {
-    return "design";
-  }
-
-  if (mimeType === "application/pdf") return "pdf";
-
-  return "other";
+function esc(id: string): string {
+  return id
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'");
 }
 
-interface QueueItem {
+interface CategoryFolder {
   id: string;
-  name: string;
-  path: string;
+  category: string;
 }
 
-function getPathParts(path: string): string[] {
-  return path
-    .split("/")
-    .map((part) => part.trim())
-    .filter(Boolean);
-}
-
-function getCategory(path: string): string {
-  const parts = getPathParts(path);
-
-  const category = parts.find(
-    (part) => part === "تجميلي" || part === "منزلي"
-  );
-
-  return category ?? "عام";
-}
-
-function getProductCode(path: string, fileName: string): string {
-  const parts = getPathParts(path);
-
-  const folderProduct = parts.find((part) =>
-    /^RE-[A-Z0-9-]+$/i.test(part)
-  );
-
-  if (folderProduct) return folderProduct.toUpperCase();
-
-  const fileMatch = fileName.match(/RE-[A-Z0-9-]+/i);
-
-  return fileMatch ? fileMatch[0].toUpperCase() : "";
-}
-
-function getMediaSection(path: string): string {
-  const parts = getPathParts(path);
-
-  if (parts.includes("فيديوهات")) return "فيديوهات";
-  if (parts.includes("تصاميم")) return "تصاميم";
-
-  return "";
+interface MediaFolder {
+  id: string;
+  category: string;
+  mediaSection: "فيديوهات" | "تصاميم";
 }
 
 export default async function handler(
@@ -94,9 +153,14 @@ export default async function handler(
     });
   }
 
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const rawKey = process.env.GOOGLE_PRIVATE_KEY;
-  const rootId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+  const email =
+    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+
+  const rawKey =
+    process.env.GOOGLE_PRIVATE_KEY;
+
+  const rootId =
+    process.env.GOOGLE_DRIVE_FOLDER_ID;
 
   if (!email || !rawKey || !rootId) {
     return res.status(500).json({
@@ -109,7 +173,9 @@ export default async function handler(
     const auth = new google.auth.JWT({
       email,
       key: rawKey.replace(/\\n/g, "\n"),
-      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+      scopes: [
+        "https://www.googleapis.com/auth/drive.readonly",
+      ],
     });
 
     const drive = google.drive({
@@ -117,123 +183,199 @@ export default async function handler(
       auth,
     });
 
-    const rootFolder = await drive.files.get({
-      fileId: rootId,
-      fields: "id,name,mimeType",
-      supportsAllDrives: true,
-    });
+    /*
+     * STEP 1
+     * Read category folders:
+     *
+     * rebune-media-library
+     * ├── تجميلي
+     * └── منزلي
+     */
 
-    const queue: QueueItem[] = [
-      {
-        id: rootId,
-        name: "",
-        path: "",
-      },
-    ];
+    const categoryFolders: CategoryFolder[] = [];
 
-    const visited = new Set<string>([rootId]);
-    const files: Record<string, unknown>[] = [];
+    let categoryPageToken: string | undefined =
+      undefined;
 
-    while (queue.length > 0) {
-      const folder = queue.shift()!;
-      let pageToken: string | undefined = undefined;
+    do {
+      const page: any = await drive.files.list({
+        q: `'${esc(
+          rootId
+        )}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+
+        fields: FIELDS,
+        pageSize: 1000,
+        pageToken: categoryPageToken,
+
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+
+        orderBy: "name",
+      });
+
+      for (const folder of page.data.files ?? []) {
+        if (!folder.id || !folder.name) {
+          continue;
+        }
+
+        categoryFolders.push({
+          id: folder.id,
+          category: categoryOf(folder.name),
+        });
+      }
+
+      categoryPageToken =
+        page.data.nextPageToken ?? undefined;
+    } while (categoryPageToken);
+
+    /*
+     * STEP 2
+     * Find فيديوهات / تصاميم
+     * inside each category.
+     */
+
+    const mediaFolders: MediaFolder[] = [];
+
+    for (const categoryFolder of categoryFolders) {
+      let pageToken: string | undefined =
+        undefined;
 
       do {
         const page: any = await drive.files.list({
-          q: `'${esc(folder.id)}' in parents and trashed = false`,
+          q: `'${esc(
+            categoryFolder.id
+          )}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+
           fields: FIELDS,
           pageSize: 1000,
           pageToken,
+
           supportsAllDrives: true,
           includeItemsFromAllDrives: true,
-          orderBy: "folder,name",
+
+          orderBy: "name",
         });
 
-        for (const f of page.data.files ?? []) {
-          if (!f.id || !f.name) continue;
+        for (const folder of page.data.files ?? []) {
+          if (!folder.id || !folder.name) {
+            continue;
+          }
 
-          if (f.mimeType === FOLDER_MIME) {
-            if (!visited.has(f.id)) {
-              visited.add(f.id);
+          const mediaSection =
+            sectionOf(folder.name);
 
-              queue.push({
-                id: f.id,
-                name: f.name,
-                path: folder.path
-                  ? `${folder.path} / ${f.name}`
-                  : f.name,
-              });
-            }
+          if (!mediaSection) {
+            continue;
+          }
+
+          mediaFolders.push({
+            id: folder.id,
+            category: categoryFolder.category,
+            mediaSection,
+          });
+        }
+
+        pageToken =
+          page.data.nextPageToken ?? undefined;
+      } while (pageToken);
+    }
+
+    /*
+     * STEP 3
+     * Read files from فيديوهات / تصاميم
+     */
+
+    const files: Record<string, unknown>[] = [];
+
+    for (const mediaFolder of mediaFolders) {
+      let pageToken: string | undefined =
+        undefined;
+
+      do {
+        const page: any = await drive.files.list({
+          q: `'${esc(
+            mediaFolder.id
+          )}' in parents and trashed = false and mimeType != '${FOLDER_MIME}'`,
+
+          fields: FIELDS,
+          pageSize: 1000,
+          pageToken,
+
+          supportsAllDrives: true,
+          includeItemsFromAllDrives: true,
+
+          orderBy: "name",
+        });
+
+        for (const file of page.data.files ?? []) {
+          if (!file.id || !file.name) {
+            continue;
+          }
+
+          const productCode =
+            extractProductCode(file.name);
+
+          /*
+           * Ignore files without a valid product code.
+           */
+          if (!productCode) {
+            console.warn(
+              `[media] Product code not found: ${file.name}`
+            );
 
             continue;
           }
 
-          const mediaSection = getMediaSection(folder.path);
-
-          // تجاهل أي ملف ليس داخل فيديوهات أو تصاميم
-          if (!mediaSection) continue;
-
-          const extension = f.name.includes(".")
-            ? (f.name.split(".").pop() ?? "").toLowerCase()
+          const extension = file.name.includes(".")
+            ? (
+                file.name.split(".").pop() ?? ""
+              ).toLowerCase()
             : "";
 
-          const fileType = kindOf(
-            f.mimeType ?? "",
-            mediaSection
-          );
+          const fileType: "video" | "design" =
+            mediaFolder.mediaSection ===
+            "فيديوهات"
+              ? "video"
+              : "design";
 
-          // تجاهل أي نوع غير مطلوب
-          if (
-            fileType !== "video" &&
-            fileType !== "design" &&
-            fileType !== "pdf"
-          ) {
-            continue;
-          }
-
-          const category = getCategory(folder.path);
-          const productCode = getProductCode(
-            folder.path,
-            f.name
-          );
+          const isPdf =
+            extension === "pdf" ||
+            file.mimeType === "application/pdf";
 
           const thumbnailUrl =
-            `https://drive.google.com/thumbnail?id=${f.id}&sz=w1000`;
+            `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
 
           const previewUrl =
-            fileType === "video" || fileType === "pdf"
-              ? `https://drive.google.com/file/d/${f.id}/preview`
-              : fileType === "design"
-                ? `https://drive.google.com/thumbnail?id=${f.id}&sz=w1600`
-                : f.webViewLink ?? "";
+            fileType === "video" || isPdf
+              ? `https://drive.google.com/file/d/${file.id}/preview`
+              : `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
 
           const downloadUrl =
-            f.webContentLink ??
-            `https://drive.google.com/uc?export=download&id=${f.id}`;
+            file.webContentLink ??
+            `https://drive.google.com/uc?export=download&id=${file.id}`;
 
           files.push({
-            id: f.id,
-            name: f.name,
+            id: file.id,
+            name: file.name,
 
-            mimeType: f.mimeType ?? "",
             extension,
-            size: formatSize(f.size),
-            modifiedTime: f.modifiedTime ?? "",
+            mimeType: file.mimeType ?? "",
 
-            category,
+            size: formatSize(file.size),
+            modifiedTime:
+              file.modifiedTime ?? "",
+
             productCode,
-            mediaSection,
 
-            folderName: folder.name,
-            parentFolder: folder.path,
+            category:
+              mediaFolder.category || "عام",
+
+            mediaSection:
+              mediaFolder.mediaSection,
 
             fileType,
 
-            thumbnailUrl:
-              fileType === "design" || fileType === "video"
-                ? thumbnailUrl
-                : f.thumbnailLink ?? "",
-
+            thumbnailUrl,
             previewUrl,
             downloadUrl,
           });
@@ -244,22 +386,6 @@ export default async function handler(
       } while (pageToken);
     }
 
-    const videoCount = files.filter(
-      (file: any) => file.fileType === "video"
-    ).length;
-
-    const designCount = files.filter(
-      (file: any) =>
-        file.fileType === "design" ||
-        file.fileType === "pdf"
-    ).length;
-
-    const productCount = new Set(
-      files
-        .map((file: any) => file.productCode)
-        .filter(Boolean)
-    ).size;
-
     res.setHeader(
       "Cache-Control",
       "s-maxage=120, stale-while-revalidate=600"
@@ -268,15 +394,6 @@ export default async function handler(
     return res.status(200).json({
       source: "drive",
       updatedAt: new Date().toISOString(),
-      rootFolder: rootFolder.data,
-
-      stats: {
-        products: productCount,
-        videos: videoCount,
-        designs: designCount,
-      },
-
-      count: files.length,
       files,
     });
   } catch (err) {
