@@ -21,11 +21,15 @@ function formatSize(bytes?: string | null): string {
   return `${(b / 1024 ** 3).toFixed(2)} GB`;
 }
 
-type FileType = "video" | "image" | "pdf" | "other";
+type FileType = "video" | "design" | "pdf" | "other";
 
-function kindOf(mimeType: string): FileType {
+function kindOf(mimeType: string, mediaSection: string): FileType {
   if (mimeType.startsWith("video/")) return "video";
-  if (mimeType.startsWith("image/")) return "image";
+
+  if (mediaSection === "تصاميم" && mimeType.startsWith("image/")) {
+    return "design";
+  }
+
   if (mimeType === "application/pdf") return "pdf";
 
   return "other";
@@ -71,11 +75,10 @@ function getProductCode(path: string, fileName: string): string {
 function getMediaSection(path: string): string {
   const parts = getPathParts(path);
 
-  const section = parts.find((part) =>
-    ["صور", "فيديوهات", "تصاميم", "PDF"].includes(part)
-  );
+  if (parts.includes("فيديوهات")) return "فيديوهات";
+  if (parts.includes("تصاميم")) return "تصاميم";
 
-  return section ?? "";
+  return "";
 }
 
 export default async function handler(
@@ -165,15 +168,34 @@ export default async function handler(
             continue;
           }
 
+          const mediaSection = getMediaSection(folder.path);
+
+          // تجاهل أي ملف ليس داخل فيديوهات أو تصاميم
+          if (!mediaSection) continue;
+
           const extension = f.name.includes(".")
             ? (f.name.split(".").pop() ?? "").toLowerCase()
             : "";
 
-          const fileType = kindOf(f.mimeType ?? "");
+          const fileType = kindOf(
+            f.mimeType ?? "",
+            mediaSection
+          );
+
+          // تجاهل أي نوع غير مطلوب
+          if (
+            fileType !== "video" &&
+            fileType !== "design" &&
+            fileType !== "pdf"
+          ) {
+            continue;
+          }
 
           const category = getCategory(folder.path);
-          const productCode = getProductCode(folder.path, f.name);
-          const mediaSection = getMediaSection(folder.path);
+          const productCode = getProductCode(
+            folder.path,
+            f.name
+          );
 
           const thumbnailUrl =
             `https://drive.google.com/thumbnail?id=${f.id}&sz=w1000`;
@@ -181,7 +203,7 @@ export default async function handler(
           const previewUrl =
             fileType === "video" || fileType === "pdf"
               ? `https://drive.google.com/file/d/${f.id}/preview`
-              : fileType === "image"
+              : fileType === "design"
                 ? `https://drive.google.com/thumbnail?id=${f.id}&sz=w1600`
                 : f.webViewLink ?? "";
 
@@ -208,7 +230,7 @@ export default async function handler(
             fileType,
 
             thumbnailUrl:
-              fileType === "image" || fileType === "video"
+              fileType === "design" || fileType === "video"
                 ? thumbnailUrl
                 : f.thumbnailLink ?? "",
 
@@ -217,9 +239,26 @@ export default async function handler(
           });
         }
 
-        pageToken = page.data.nextPageToken ?? undefined;
+        pageToken =
+          page.data.nextPageToken ?? undefined;
       } while (pageToken);
     }
+
+    const videoCount = files.filter(
+      (file: any) => file.fileType === "video"
+    ).length;
+
+    const designCount = files.filter(
+      (file: any) =>
+        file.fileType === "design" ||
+        file.fileType === "pdf"
+    ).length;
+
+    const productCount = new Set(
+      files
+        .map((file: any) => file.productCode)
+        .filter(Boolean)
+    ).size;
 
     res.setHeader(
       "Cache-Control",
@@ -230,6 +269,13 @@ export default async function handler(
       source: "drive",
       updatedAt: new Date().toISOString(),
       rootFolder: rootFolder.data,
+
+      stats: {
+        products: productCount,
+        videos: videoCount,
+        designs: designCount,
+      },
+
       count: files.length,
       files,
     });
