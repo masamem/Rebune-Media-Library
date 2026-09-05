@@ -89,7 +89,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const auth = new google.auth.JWT({
       email,
       key: rawKey.replace(/\\n/g, "\n"),
-      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+      scopes: ["https://www.googleapis.com/auth/drive.readonly"], 
     });
     const drive = google.drive({ version: "v3", auth });
     const rootFolder = await drive.files.get({
