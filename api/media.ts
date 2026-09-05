@@ -143,7 +143,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let pageToken: string | undefined = undefined;
 
       do {
-        const page = await drive.files.list({
+        const page: any = await drive.files.list({
           q: `'${esc(folder.id)}' in parents and trashed = false`,
           fields: FIELDS,
           pageSize: 1000,
