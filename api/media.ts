@@ -92,6 +92,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       scopes: ["https://www.googleapis.com/auth/drive.readonly"],
     });
     const drive = google.drive({ version: "v3", auth });
+    const rootFolder = await drive.files.get({
+  fileId: rootId,
+  fields: "id,name,mimeType,parents,driveId",
+  supportsAllDrives: true,
+});
 
     // اجتياز متكرر (BFS) لجميع المجلدات الفرعية
     const queue: QueueItem[] = [{ id: rootId, name: "", path: "" }];
@@ -103,15 +108,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let pageToken: string | undefined = undefined;
 
       do {
-        const page = await drive.files.list({
-          q: `'${esc(folder.id)}' in parents and trashed = false`,
-          fields: FIELDS,
-          pageSize: 1000,
-          pageToken,
-          supportsAllDrives: true,
-          includeItemsFromAllDrives: true,
-          orderBy: "folder, name",
-        });
+  const page: any = await drive.files.list({
+    q: `'${esc(folder.id)}' in parents and trashed = false`,
+    fields: FIELDS,
+    pageSize: 1000,
+    pageToken,
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+    orderBy: "folder, name",
+  });
 
         for (const f of page.data.files ?? []) {
           if (!f.id || !f.name) continue;
@@ -161,10 +166,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.setHeader("Cache-Control", "s-maxage=120, stale-while-revalidate=600");
     return res.status(200).json({
-      source: "drive",
-      updatedAt: new Date().toISOString(),
-      files,
-    });
+  source: "drive",
+  updatedAt: new Date().toISOString(),
+  rootFolder: rootFolder.data,
+  files,
+});
   } catch (err) {
     console.error("[/api/media]", err);
     return res.status(500).json({ source: "error", error: "drive_fetch_failed" });
