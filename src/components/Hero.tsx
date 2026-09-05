@@ -42,7 +42,7 @@ export default function Hero({
 </h1>
 
           <p className="mt-4 max-w-md text-[15px] font-medium leading-8 text-ink-700 md:text-base">
-            كل ما تحتاجه من صور وتصاميم وفيديوهات منتجات <span className="lat font-bold">Rebune</span> في
+            كل ما تحتاجه من صور وتصاميم وفيديوهات منتجات <span className="lat font-bold">ريبون</span> في
             مكان واحد.
           </p>
 
