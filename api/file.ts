@@ -51,19 +51,31 @@ export default async function handler(
       }
     );
 
-    res.setHeader(
-      "Content-Type",
-      meta.data.mimeType || "application/octet-stream"
-    );
+    const fileName = meta.data.name || "file";
+    const extension = fileName.includes(".")
+      ? (fileName.split(".").pop() || "").toLowerCase()
+      : "";
+
+    const contentType =
+      extension === "glb"
+        ? "model/gltf-binary"
+        : extension === "gltf"
+          ? "model/gltf+json"
+          : meta.data.mimeType || "application/octet-stream";
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("X-Content-Type-Options", "nosniff");
 
     res.setHeader(
       "Content-Disposition",
       `inline; filename*=UTF-8''${encodeURIComponent(
-        meta.data.name || "file"
+        fileName
       )}`
     );
 
-    res.setHeader("Cache-Control", "private, max-age=3600");
+    // The media URL includes ?v=<Drive modifiedTime>. A changed Drive file therefore
+    // gets a new URL immediately, while unchanged models can be cached safely.
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
 
     response.data.pipe(res);
   } catch (error) {

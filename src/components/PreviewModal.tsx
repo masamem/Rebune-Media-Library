@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatDate, type MediaFile } from "../data/media";
 import { downloadMedia } from "../lib/download";
 import { useToast } from "./Toast";
@@ -17,6 +17,7 @@ export default function PreviewModal({
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const modelRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     setZoom(1);
@@ -68,16 +69,16 @@ export default function PreviewModal({
   ];
 
   const isImage =
-    file.fileType === "image" ||
-    (file.fileType === "design" && imageExtensions.includes(extension));
+    file.fileType === "image" || imageExtensions.includes(extension);
 
   const isPdf = extension === "pdf";
+  const is3d = file.fileType === "3d" || extension === "glb" || extension === "gltf";
 
   const typeLabel =
-    file.fileType === "video"
-      ? "فيديو"
-      : file.fileType === "design"
-        ? "تصميم"
+    is3d
+      ? "عرض 3D"
+      : file.fileType === "video"
+        ? "فيديو"
         : file.fileType === "image"
           ? "صورة"
           : isPdf
@@ -122,7 +123,7 @@ export default function PreviewModal({
       aria-label={`معاينة ${displayName}`}
     >
       <div
-        className="animate-pop-in relative flex max-h-[96dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-[1.4rem] bg-cream-50 shadow-lift sm:max-h-[92dvh] sm:rounded-[1.4rem]"
+        className={`animate-pop-in relative flex max-h-[96dvh] w-full flex-col overflow-hidden rounded-t-[1.4rem] bg-cream-50 shadow-lift sm:max-h-[94dvh] sm:rounded-[1.4rem] ${is3d ? "sm:max-w-[500px]" : "max-w-3xl"}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -134,7 +135,55 @@ export default function PreviewModal({
         </button>
 
         <div className="relative shrink-0 overflow-hidden bg-ink-950">
-          {file.fileType === "video" ? (
+          {is3d ? (
+            <div dir="ltr" className="relative w-full bg-gradient-to-b from-cream-100 to-cream-200" style={{ height: "clamp(360px, 64dvh, 620px)" }}>
+              <model-viewer
+                ref={modelRef}
+                key={file.id}
+                src={file.modelUrl || file.previewUrl}
+                alt={`نموذج ثلاثي الأبعاد ${displayName}`}
+                camera-controls
+                auto-rotate
+                camera-orbit="0deg 75deg 100%"
+                camera-target="auto auto auto"
+                field-of-view="30deg"
+                min-field-of-view="22deg"
+                max-field-of-view="46deg"
+                shadow-intensity="1.2"
+                exposure="1.1"
+                interaction-prompt="auto"
+                touch-action="pan-y"
+                className="absolute inset-0 block"
+                style={{ width: "100%", height: "100%", display: "block" }}
+              />
+              <div className="absolute bottom-3 start-3 end-3 flex items-center justify-between gap-2">
+                <span className="rounded-full bg-ink-950/75 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-md">
+                  360° · اسحب لتدوير المنتج · قرّب بإصبعين أو عجلة الماوس
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const viewer = modelRef.current as HTMLElement & {
+                      resetTurntableRotation?: () => void;
+                      cameraTarget?: string;
+                      cameraOrbit?: string;
+                      fieldOfView?: string;
+                      jumpCameraToGoal?: () => void;
+                    };
+                    if (!viewer) return;
+                    viewer.resetTurntableRotation?.();
+                    viewer.cameraTarget = "auto auto auto";
+                    viewer.cameraOrbit = "0deg 75deg 100%";
+                    viewer.fieldOfView = "30deg";
+                    viewer.jumpCameraToGoal?.();
+                  }}
+                  className="rounded-full bg-white/95 px-4 py-2 text-[11px] font-extrabold text-ink-800 shadow-card transition hover:text-brand-600"
+                >
+                  إعادة الكاميرا
+                </button>
+              </div>
+            </div>
+          ) : file.fileType === "video" ? (
             file.previewUrl.includes("drive.google.com/file/d/") ? (
               <iframe
                 key={file.id}
@@ -226,7 +275,7 @@ export default function PreviewModal({
           )}
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-5 md:p-6">
+        <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${is3d ? "gap-3 p-4 md:p-5" : "gap-4 p-5 md:p-6"}`}>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <TypeBadge
@@ -276,25 +325,27 @@ export default function PreviewModal({
           </div>
 
           <div className="mt-auto flex flex-col gap-2 sm:flex-row">
-            <button
-              onClick={handleDownload}
-              disabled={busy}
-              className="flex h-13 flex-1 items-center justify-center gap-2.5 rounded-xl bg-brand-500 text-base font-extrabold text-white shadow-card transition-all duration-200 hover:bg-brand-600 active:scale-[0.98] disabled:opacity-60"
-            >
-              <DownloadIcon
-                width={20}
-                height={20}
-                className={busy ? "animate-bounce" : ""}
-              />
+            {!is3d && (
+              <button
+                onClick={handleDownload}
+                disabled={busy}
+                className="flex h-13 flex-1 items-center justify-center gap-2.5 rounded-xl bg-brand-500 text-base font-extrabold text-white shadow-card transition-all duration-200 hover:bg-brand-600 active:scale-[0.98] disabled:opacity-60"
+              >
+                <DownloadIcon
+                  width={20}
+                  height={20}
+                  className={busy ? "animate-bounce" : ""}
+                />
 
-              {busy
-                ? "جارٍ التحميل..."
-                : `تحميل ${typeLabel} (${file.size})`}
-            </button>
+                {busy
+                  ? "جارٍ التحميل..."
+                  : `تحميل ${typeLabel} (${file.size})`}
+              </button>
+            )}
 
             <button
               onClick={onClose}
-              className="h-13 rounded-xl border border-cream-300 bg-white px-7 text-base font-bold text-ink-700 transition-all hover:border-ink-400 active:scale-[0.98]"
+              className={`h-13 rounded-xl border border-cream-300 bg-white px-7 text-base font-bold text-ink-700 transition-all hover:border-ink-400 active:scale-[0.98] ${is3d ? "w-full" : ""}`}
             >
               إغلاق
             </button>

@@ -15,7 +15,8 @@ export default function Hero({
   loading: boolean;
 }) {
   const videos = files.filter((f) => f.fileType === "video").length;
-  const designs = files.filter((f) => f.fileType === "design").length;
+  const designs = files.filter((f) => f.tags?.includes("design")).length;
+  const models3d = files.filter((f) => f.fileType === "3d").length;
   const products = groupByProduct(files).length;
 
   return (
@@ -46,7 +47,7 @@ export default function Hero({
           </h1>
 
           <p className="mt-4 max-w-md text-[15px] font-medium leading-8 text-ink-700 md:text-base">
-            كل فيديوهات وتصاميم منتجات{" "}
+            فيديوهات وتصاميم وعروض 360° لمنتجات{" "}
             <span className="lat font-bold">ريبون</span> في مكان واحد.
           </p>
 
@@ -101,11 +102,12 @@ export default function Hero({
           </div>
 
           {/* أرقام سريعة */}
-          <dl className="mt-8 flex max-w-md items-center justify-between gap-3 border-t border-cream-300/70 pt-5">
+          <dl className="mt-8 grid max-w-lg grid-cols-4 items-center gap-2 border-t border-cream-300/70 pt-5">
             {[
               { n: products, l: "منتج" },
               { n: videos, l: "فيديو" },
               { n: designs, l: "تصميم" },
+              { n: models3d, l: "عرض 3D" },
             ].map((s) => (
               <div key={s.l} className="text-center">
                 <dt className="lat text-2xl font-extrabold text-ink-950 md:text-3xl">

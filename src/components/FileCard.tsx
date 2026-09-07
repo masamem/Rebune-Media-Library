@@ -2,7 +2,7 @@ import { useState } from "react";
 import { TYPE_LABEL, formatDate, type MediaFile } from "../data/media";
 import { downloadMedia } from "../lib/download";
 import { useToast } from "./Toast";
-import { DownloadIcon, EyeIcon, FileTextIcon, FolderIcon, PlayIcon } from "./Icons";
+import { DownloadIcon, EyeIcon, FileTextIcon, FolderIcon, PlayIcon, Rotate360Icon } from "./Icons";
 
 export function TypeBadge({
   type,
@@ -18,7 +18,7 @@ export function TypeBadge({
       className={`lat inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-extrabold tracking-wide ${
         type === "video"
           ? "bg-ink-950/85 text-cream-50 backdrop-blur-sm"
-          : type === "pdf"
+          : type === "pdf" || type === "3d"
             ? "bg-brand-500 text-white"
             : "bg-cream-50/90 text-ink-800 backdrop-blur-sm"
       }`}
@@ -66,12 +66,22 @@ export default function FileCard({
     >
       {/* المعاينة المصغرة */}
       <div className="relative aspect-[4/3] overflow-hidden bg-cream-200">
-        <img
-          src={file.thumbnail}
-          alt={file.fileName}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-        />
+        {file.fileType === "3d" ? (
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-50 via-cream-50 to-cream-200 text-brand-600">
+            <div className="flex flex-col items-center gap-2">
+              <Rotate360Icon width={42} height={42} />
+              <span className="lat text-sm font-extrabold">360° / 3D</span>
+              <span className="text-[10px] font-bold text-ink-500">اسحب لتدوير المنتج</span>
+            </div>
+          </div>
+        ) : (
+          <img
+            src={file.thumbnail}
+            alt={file.fileName}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+          />
+        )}
         {file.fileType === "video" && (
           <>
             <span className="absolute inset-0 grid place-items-center">
@@ -118,21 +128,25 @@ export default function FileCard({
 
         {/* الأزرار — ظاهرة دائمًا */}
         <div className="mt-auto flex gap-2 pt-3">
-          <button
-            onClick={handleDownload}
-            disabled={busy}
-            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 text-sm font-extrabold text-white shadow-card transition-all duration-200 hover:bg-brand-600 active:scale-[0.97] disabled:opacity-60"
-          >
-            <DownloadIcon width={17} height={17} className={busy ? "animate-bounce" : ""} />
-            {busy ? "جارٍ التحميل" : "تحميل"}
-          </button>
+          {file.fileType !== "3d" && (
+            <button
+              onClick={handleDownload}
+              disabled={busy}
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 text-sm font-extrabold text-white shadow-card transition-all duration-200 hover:bg-brand-600 active:scale-[0.97] disabled:opacity-60"
+            >
+              <DownloadIcon width={17} height={17} className={busy ? "animate-bounce" : ""} />
+              {busy ? "جارٍ التحميل" : "تحميل"}
+            </button>
+          )}
           <button
             onClick={handlePreview}
             aria-label={`معاينة ${file.fileName}`}
-            className="flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-cream-300 bg-white text-ink-700 transition-all duration-200 hover:border-brand-500 hover:text-brand-600 active:scale-95 md:w-auto md:px-4"
+            className={`flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-cream-300 bg-white text-ink-700 transition-all duration-200 hover:border-brand-500 hover:text-brand-600 active:scale-95 md:px-4 ${file.fileType === "3d" ? "flex-1" : "w-11 md:w-auto"}`}
           >
-            <EyeIcon width={17} height={17} />
-            <span className="hidden text-sm font-bold md:inline">معاينة</span>
+            <span title={file.fileType === "3d" ? "اسحب لتدوير المنتج 360°" : undefined}>
+              {file.fileType === "3d" ? <Rotate360Icon width={19} height={19} /> : <EyeIcon width={17} height={17} />}
+            </span>
+            <span className="hidden text-sm font-bold md:inline">{file.fileType === "3d" ? "عرض 360°" : "معاينة"}</span>
           </button>
         </div>
       </div>

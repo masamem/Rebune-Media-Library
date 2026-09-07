@@ -59,7 +59,7 @@ export default function FilterChips({
 
   const kinds = useMemo(
     () =>
-      (["video", "image", "pdf", "other"] as const).filter((t) =>
+      (["video", "image", "pdf", "3d", "other"] as const).filter((t) =>
         files.some((f) => f.fileType === t),
       ),
     [files],
@@ -99,7 +99,7 @@ export default function FilterChips({
           {kinds.map((t) => (
             <Chip
               key={t}
-              label={TYPE_LABEL[t]}
+              label={t === "3d" ? "360° / 3D" : TYPE_LABEL[t]}
               count={countBy((f) => f.fileType === t)}
               active={fileType === t}
               onClick={() => onFileType(fileType === t ? "all" : t)}
