@@ -153,7 +153,8 @@ export default function PreviewModal({
                 exposure="1.1"
                 interaction-prompt="auto"
                 touch-action="pan-y"
-                className="block h-full w-full"
+                className="absolute inset-0 block"
+                style={{ width: "100%", height: "100%", display: "block" }}
               />
               <div className="absolute bottom-3 start-3 end-3 flex items-center justify-between gap-2">
                 <span className="rounded-full bg-ink-950/75 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-md">
