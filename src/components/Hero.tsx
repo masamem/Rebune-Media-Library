@@ -15,7 +15,7 @@ export default function Hero({
   loading: boolean;
 }) {
   const videos = files.filter((f) => f.fileType === "video").length;
-  const designs = files.filter((f) => f.fileType === "design").length;
+  const designs = files.filter((f) => f.tags?.includes("design")).length;
   const products = groupByProduct(files).length;
 
   return (

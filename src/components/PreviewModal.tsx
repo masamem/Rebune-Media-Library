@@ -123,7 +123,7 @@ export default function PreviewModal({
       aria-label={`معاينة ${displayName}`}
     >
       <div
-        className={`animate-pop-in relative flex max-h-[96dvh] w-full flex-col overflow-hidden rounded-t-[1.4rem] bg-cream-50 shadow-lift sm:max-h-[94dvh] sm:rounded-[1.4rem] ${is3d ? "sm:max-w-[560px]" : "max-w-3xl"}`}
+        className={`animate-pop-in relative flex max-h-[96dvh] w-full flex-col overflow-hidden rounded-t-[1.4rem] bg-cream-50 shadow-lift sm:max-h-[94dvh] sm:rounded-[1.4rem] ${is3d ? "sm:max-w-[500px]" : "max-w-3xl"}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -136,7 +136,7 @@ export default function PreviewModal({
 
         <div className="relative shrink-0 overflow-hidden bg-ink-950">
           {is3d ? (
-            <div dir="ltr" className="relative bg-gradient-to-b from-cream-100 to-cream-200">
+            <div dir="ltr" className="relative w-full bg-gradient-to-b from-cream-100 to-cream-200" style={{ height: "clamp(360px, 64dvh, 620px)" }}>
               <model-viewer
                 ref={modelRef}
                 key={file.id}
@@ -153,7 +153,7 @@ export default function PreviewModal({
                 exposure="1.1"
                 interaction-prompt="auto"
                 touch-action="pan-y"
-                className="block h-[64dvh] min-h-[500px] max-h-[720px] w-full sm:h-[68dvh] sm:min-h-[560px]"
+                className="block h-full w-full"
               />
               <div className="absolute bottom-3 start-3 end-3 flex items-center justify-between gap-2">
                 <span className="rounded-full bg-ink-950/75 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-md">
