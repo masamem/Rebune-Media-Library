@@ -10,6 +10,10 @@ declare global {
         "auto-rotate"?: boolean;
         "shadow-intensity"?: string;
         exposure?: string;
+        "camera-orbit"?: string;
+        "field-of-view"?: string;
+        "min-field-of-view"?: string;
+        "max-field-of-view"?: string;
         "interaction-prompt"?: string;
         "touch-action"?: string;
       };
