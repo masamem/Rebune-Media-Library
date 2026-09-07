@@ -144,37 +144,15 @@ export default function PreviewModal({
                 alt={`نموذج ثلاثي الأبعاد ${displayName}`}
                 camera-controls
                 auto-rotate
-                camera-orbit="0deg 75deg auto"
-                camera-target="auto"
-                field-of-view="34deg"
-                min-field-of-view="20deg"
-                max-field-of-view="48deg"
+                camera-orbit="0deg 75deg 100%"
+                camera-target="auto auto auto"
+                field-of-view="30deg"
+                min-field-of-view="22deg"
+                max-field-of-view="46deg"
                 shadow-intensity="1.2"
                 exposure="1.1"
                 interaction-prompt="auto"
                 touch-action="pan-y"
-                onLoad={(event: React.SyntheticEvent<HTMLElement>) => {
-                  const viewer = event.currentTarget as HTMLElement & {
-                    getBoundingBoxCenter?: () => { x: number; y: number; z: number };
-                    getDimensions?: () => { x: number; y: number; z: number };
-                    cameraTarget?: string;
-                    cameraOrbit?: string;
-                    jumpCameraToGoal?: () => void;
-                  };
-
-                  const center = viewer.getBoundingBoxCenter?.();
-                  const dimensions = viewer.getDimensions?.();
-                  if (!center || !dimensions) return;
-
-                  // Aim at the real geometry center instead of the Blender origin.
-                  // This keeps every product centered even when its origin is at the base.
-                  viewer.cameraTarget = `${center.x}m ${center.y}m ${center.z}m`;
-
-                  const maxDimension = Math.max(dimensions.x, dimensions.y, dimensions.z);
-                  const radius = Math.max(maxDimension * 2.05, 0.01);
-                  viewer.cameraOrbit = `0deg 75deg ${radius}m`;
-                  viewer.jumpCameraToGoal?.();
-                }}
                 className="block h-full w-full"
               />
               <div className="absolute bottom-3 start-3 end-3 flex items-center justify-between gap-2">
@@ -186,21 +164,17 @@ export default function PreviewModal({
                   onClick={() => {
                     const viewer = modelRef.current as HTMLElement & {
                       resetTurntableRotation?: () => void;
-                      getBoundingBoxCenter?: () => { x: number; y: number; z: number };
-                      getDimensions?: () => { x: number; y: number; z: number };
                       cameraTarget?: string;
                       cameraOrbit?: string;
+                      fieldOfView?: string;
                       jumpCameraToGoal?: () => void;
                     };
-                    viewer?.resetTurntableRotation?.();
-                    const center = viewer?.getBoundingBoxCenter?.();
-                    const dimensions = viewer?.getDimensions?.();
-                    if (viewer && center && dimensions) {
-                      viewer.cameraTarget = `${center.x}m ${center.y}m ${center.z}m`;
-                      const maxDimension = Math.max(dimensions.x, dimensions.y, dimensions.z);
-                      viewer.cameraOrbit = `0deg 75deg ${Math.max(maxDimension * 2.05, 0.01)}m`;
-                      viewer.jumpCameraToGoal?.();
-                    }
+                    if (!viewer) return;
+                    viewer.resetTurntableRotation?.();
+                    viewer.cameraTarget = "auto auto auto";
+                    viewer.cameraOrbit = "0deg 75deg 100%";
+                    viewer.fieldOfView = "30deg";
+                    viewer.jumpCameraToGoal?.();
                   }}
                   className="rounded-full bg-white/95 px-4 py-2 text-[11px] font-extrabold text-ink-800 shadow-card transition hover:text-brand-600"
                 >
