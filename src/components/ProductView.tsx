@@ -238,8 +238,9 @@ export default function ProductView({
               </h1>
               <p className="font-display mt-1.5 text-lg font-bold text-ink-800 md:text-xl">{group.name}</p>
               <p className="mt-2 text-[13px] font-bold text-ink-500">
-                <span className="lat">{group.files.length}</span> ملفًا جاهزًا للتحميل — صور، فيديوهات،
-                تصاميم، نماذج 3D ومستندات
+                <span className="lat">{downloadableFiles.length}</span>{" "}
+                {downloadableFiles.length === 1 ? "ملف قابل للتحميل" : "ملفات قابلة للتحميل"}
+                {group.files.some((f) => f.fileType === "3d") && " + عرض 3D تفاعلي"}
               </p>
               {group.files.some((f) => f.fileType === "3d") && (
                 <button

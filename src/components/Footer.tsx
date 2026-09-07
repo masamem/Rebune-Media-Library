@@ -26,10 +26,21 @@ export default function Footer() {
 
           <div className="text-start md:text-end">
             <p className="font-display text-sm font-bold text-cream-100">
-              مكتبة الوسائط الرسمية — صور · تصاميم · فيديوهات
+              مكتبة الوسائط الرسمية — صور · تصاميم · فيديوهات · منتجات 3D
             </p>
             <p className="mt-2 max-w-sm text-[13px] font-medium leading-6 text-cream-300/80">
               جميع المواد المعروضة معتمدة من فريق التسويق، وروابط التحميل جاهزة للربط مع Google Drive.
+            </p>
+            <p className="mt-2 text-[13px] font-semibold text-cream-300/80">
+              الموقع الرسمي:{" "}
+              <a
+                href="https://www.rebune.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lat text-cream-100 underline decoration-brand-500/70 underline-offset-4 transition-colors hover:text-brand-400"
+              >
+                www.rebune.com
+              </a>
             </p>
           </div>
         </div>
