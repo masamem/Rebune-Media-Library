@@ -123,7 +123,7 @@ export default function PreviewModal({
       aria-label={`معاينة ${displayName}`}
     >
       <div
-        className="animate-pop-in relative flex max-h-[96dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-[1.4rem] bg-cream-50 shadow-lift sm:max-h-[92dvh] sm:rounded-[1.4rem]"
+        className={`animate-pop-in relative flex max-h-[96dvh] w-full flex-col overflow-hidden rounded-t-[1.4rem] bg-cream-50 shadow-lift sm:max-h-[94dvh] sm:rounded-[1.4rem] ${is3d ? "sm:max-w-[560px]" : "max-w-3xl"}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -144,27 +144,27 @@ export default function PreviewModal({
                 alt={`نموذج ثلاثي الأبعاد ${displayName}`}
                 camera-controls
                 auto-rotate
-                camera-orbit="0deg 75deg 8%"
+                camera-orbit="0deg 75deg 7%"
                 camera-target="auto auto auto"
-                field-of-view="16deg"
+                field-of-view="15deg"
                 min-field-of-view="6deg"
                 max-field-of-view="45deg"
                 shadow-intensity="1.2"
                 exposure="1.1"
                 interaction-prompt="auto"
                 touch-action="pan-y"
-                className="block h-[58dvh] min-h-[420px] w-full sm:h-[62dvh]"
+                className="block h-[54dvh] min-h-[390px] w-full sm:h-[58dvh] sm:min-h-[480px]"
               />
               <div className="absolute bottom-3 start-3 end-3 flex items-center justify-between gap-2">
                 <span className="rounded-full bg-ink-950/75 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-md">
-                  اسحب للتدوير · قرّب بإصبعين أو عجلة الماوس
+                  360° · اسحب لتدوير المنتج · قرّب بإصبعين أو عجلة الماوس
                 </span>
                 <button
                   type="button"
                   onClick={() => {
                     const viewer = modelRef.current as HTMLElement & { resetTurntableRotation?: () => void; cameraOrbit?: string };
                     viewer?.resetTurntableRotation?.();
-                    if (viewer) viewer.cameraOrbit = "0deg 75deg 8%";
+                    if (viewer) viewer.cameraOrbit = "0deg 75deg 7%";
                   }}
                   className="rounded-full bg-white/95 px-4 py-2 text-[11px] font-extrabold text-ink-800 shadow-card transition hover:text-brand-600"
                 >
@@ -264,7 +264,7 @@ export default function PreviewModal({
           )}
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-5 md:p-6">
+        <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${is3d ? "gap-3 p-4 md:p-5" : "gap-4 p-5 md:p-6"}`}>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <TypeBadge

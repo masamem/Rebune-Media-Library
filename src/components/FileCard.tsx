@@ -2,7 +2,7 @@ import { useState } from "react";
 import { TYPE_LABEL, formatDate, type MediaFile } from "../data/media";
 import { downloadMedia } from "../lib/download";
 import { useToast } from "./Toast";
-import { DownloadIcon, EyeIcon, FileTextIcon, FolderIcon, PlayIcon } from "./Icons";
+import { DownloadIcon, EyeIcon, FileTextIcon, FolderIcon, PlayIcon, Rotate360Icon } from "./Icons";
 
 export function TypeBadge({
   type,
@@ -72,6 +72,14 @@ export default function FileCard({
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
         />
+        {file.fileType === "3d" && (
+          <span className="absolute inset-0 grid place-items-center pointer-events-none">
+            <span className="flex h-20 w-20 flex-col items-center justify-center rounded-full border border-white/70 bg-ink-950/65 text-white shadow-lift backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:bg-brand-500">
+              <Rotate360Icon width={32} height={32} />
+              <span className="lat mt-0.5 text-[12px] font-extrabold">360°</span>
+            </span>
+          </span>
+        )}
         {file.fileType === "video" && (
           <>
             <span className="absolute inset-0 grid place-items-center">
@@ -131,8 +139,10 @@ export default function FileCard({
             aria-label={`معاينة ${file.fileName}`}
             className="flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-cream-300 bg-white text-ink-700 transition-all duration-200 hover:border-brand-500 hover:text-brand-600 active:scale-95 md:w-auto md:px-4"
           >
-            <EyeIcon width={17} height={17} />
-            <span className="hidden text-sm font-bold md:inline">{file.fileType === "3d" ? "عرض 3D" : "معاينة"}</span>
+            <span title={file.fileType === "3d" ? "اسحب لتدوير المنتج 360°" : undefined}>
+              {file.fileType === "3d" ? <Rotate360Icon width={19} height={19} /> : <EyeIcon width={17} height={17} />}
+            </span>
+            <span className="hidden text-sm font-bold md:inline">{file.fileType === "3d" ? "عرض 360°" : "معاينة"}</span>
           </button>
         </div>
       </div>
