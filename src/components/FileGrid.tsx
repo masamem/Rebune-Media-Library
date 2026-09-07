@@ -2,7 +2,48 @@ import { useMemo, useState } from "react";
 import { SECTION_LABEL, type MediaFile, type ProductGroup, type Section } from "../data/media";
 import FileCard from "./FileCard";
 import { CountPill, Reveal } from "./ui";
-import { ForwardIcon, SearchOffIcon, XIcon } from "./Icons";
+import { ForwardIcon, Rotate360Icon, SearchOffIcon, XIcon } from "./Icons";
+
+
+function ProductThumb({ product }: { product: ProductGroup }) {
+  const visual = product.files.find((f) => f.fileType !== "3d" && !!f.thumbnail);
+  const has3d = product.files.some((f) => f.fileType === "3d");
+
+  if (visual) {
+    return (
+      <span className="relative block h-full w-full">
+        <img
+          src={visual.thumbnail}
+          alt={product.name}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        {has3d && (
+          <span className="absolute end-2 top-2 inline-flex items-center gap-1 rounded-full bg-ink-950/80 px-2 py-1 text-[10px] font-extrabold text-white backdrop-blur-sm">
+            <Rotate360Icon width={13} height={13} />
+            360°
+          </span>
+        )}
+      </span>
+    );
+  }
+
+  if (has3d) {
+    return (
+      <span className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-50 via-cream-50 to-cream-200 text-brand-600">
+        <span className="flex flex-col items-center gap-2">
+          <span className="grid h-16 w-16 place-items-center rounded-full border border-brand-200 bg-white/85 shadow-card">
+            <Rotate360Icon width={30} height={30} />
+          </span>
+          <span className="lat text-sm font-extrabold">360° / 3D</span>
+          <span className="text-[10px] font-bold text-ink-500">عرض تفاعلي</span>
+        </span>
+      </span>
+    );
+  }
+
+  return <span className="block h-full w-full bg-cream-200" />;
+}
 
 function EmptyState({ onClear }: { onClear: () => void }) {
   return (
@@ -83,12 +124,7 @@ export default function FileGrid({
                 className="group w-40 shrink-0 snap-start overflow-hidden rounded-xl border border-cream-300/80 bg-cream-50 text-start shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/60 hover:shadow-lift active:scale-[0.97] md:w-44"
               >
                 <span className="relative block aspect-[4/3] overflow-hidden bg-cream-200">
-                  <img
-                    src={p.files[0].thumbnail}
-                    alt={p.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
+                  <ProductThumb product={p} />
                   <span className="lat absolute bottom-1.5 start-1.5 rounded-md bg-ink-950/80 px-2 py-0.5 text-[10px] font-extrabold tracking-wide text-cream-50 backdrop-blur-sm">
                     {p.files.length} ملفات
                   </span>

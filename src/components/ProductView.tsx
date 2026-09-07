@@ -23,6 +23,32 @@ import {
   Rotate360Icon,
 } from "./Icons";
 
+
+function ProductVisual({ product, className }: { product: ProductGroup; className: string }) {
+  const visual = product.files.find((f) => f.fileType !== "3d" && !!f.thumbnail);
+  const has3d = product.files.some((f) => f.fileType === "3d");
+  if (visual) {
+    return (
+      <span className={`relative overflow-hidden ${className}`}>
+        <img src={visual.thumbnail} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+        {has3d && (
+          <span className="absolute end-2 top-2 inline-flex items-center gap-1 rounded-full bg-ink-950/80 px-2 py-1 text-[10px] font-extrabold text-white backdrop-blur-sm">
+            <Rotate360Icon width={12} height={12} /> 360°
+          </span>
+        )}
+      </span>
+    );
+  }
+  return (
+    <span className={`grid place-items-center bg-gradient-to-br from-brand-50 via-cream-50 to-cream-200 text-brand-600 ${className}`}>
+      <span className="flex flex-col items-center gap-1">
+        <Rotate360Icon width={26} height={26} />
+        <span className="lat text-[11px] font-extrabold">360° / 3D</span>
+      </span>
+    </span>
+  );
+}
+
 interface GroupDef {
   key: string;
   label: string;
@@ -80,12 +106,21 @@ function FileRow({
         className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-cream-200 md:h-[4.5rem] md:w-32"
         aria-label={`معاينة ${file.fileName}`}
       >
-        <img
-          src={file.thumbnail}
-          alt={file.fileName}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {file.fileType === "3d" ? (
+          <span className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-50 via-cream-50 to-cream-200 text-brand-600">
+            <span className="flex flex-col items-center">
+              <Rotate360Icon width={25} height={25} />
+              <span className="lat text-[9px] font-extrabold">360°</span>
+            </span>
+          </span>
+        ) : (
+          <img
+            src={file.thumbnail}
+            alt={file.fileName}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        )}
         <span className="absolute inset-0 grid place-items-center bg-ink-950/0 transition-colors group-hover:bg-ink-950/25">
           <span className="grid h-8 w-8 scale-75 place-items-center rounded-full bg-ink-950/70 text-cream-50 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
             <EyeIcon width={15} height={15} />
@@ -178,10 +213,9 @@ export default function ProductView({
           <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-brand-500/10" aria-hidden="true" />
           <div className="pointer-events-none absolute -bottom-20 left-24 h-44 w-44 rounded-full bg-brand-500/5" aria-hidden="true" />
           <div className="relative flex flex-col gap-6 p-6 md:flex-row md:items-center md:p-8">
-            <img
-              src={group.files[0].thumbnail}
-              alt={group.name}
-              className="h-36 w-full rounded-[1rem] border-4 border-white object-cover shadow-card md:h-32 md:w-44"
+            <ProductVisual
+              product={group}
+              className="h-36 w-full rounded-[1rem] border-4 border-white shadow-card md:h-32 md:w-44"
             />
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -270,17 +304,12 @@ export default function ProductView({
               onClick={() => onOpenProduct(p.code)}
               className="group flex w-56 shrink-0 snap-start items-center gap-3 rounded-xl border border-cream-300/80 bg-cream-50 p-3 text-start shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/60 hover:shadow-lift active:scale-[0.97]"
             >
-              <img
-                src={p.files[0].thumbnail}
-                alt={p.name}
-                loading="lazy"
-                className="h-14 w-16 shrink-0 rounded-lg object-cover"
-              />
+              <ProductVisual product={p} className="h-14 w-16 shrink-0 rounded-lg" />
               <span className="min-w-0">
                 <span className="lat block text-xs font-extrabold tracking-wider text-brand-600">{p.code}</span>
                 <span className="block truncate text-xs font-bold text-ink-900">{p.name}</span>
                 <span className="mt-0.5 block text-[10px] font-bold text-ink-400">
-                  <span className="lat">{p.files.length}</span> ملفات · {TYPE_LABEL[p.files[0].fileType]}
+                  <span className="lat">{p.files.length}</span> ملفات · {p.files.some((f) => f.fileType === "3d") ? "360° / 3D" : TYPE_LABEL[p.files[0].fileType]}
                 </span>
               </span>
             </button>

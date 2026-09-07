@@ -66,19 +66,21 @@ export default function FileCard({
     >
       {/* المعاينة المصغرة */}
       <div className="relative aspect-[4/3] overflow-hidden bg-cream-200">
-        <img
-          src={file.thumbnail}
-          alt={file.fileName}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-        />
-        {file.fileType === "3d" && (
-          <span className="absolute inset-0 grid place-items-center pointer-events-none">
-            <span className="flex h-20 w-20 flex-col items-center justify-center rounded-full border border-white/70 bg-ink-950/65 text-white shadow-lift backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:bg-brand-500">
-              <Rotate360Icon width={32} height={32} />
-              <span className="lat mt-0.5 text-[12px] font-extrabold">360°</span>
-            </span>
-          </span>
+        {file.fileType === "3d" ? (
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-50 via-cream-50 to-cream-200 text-brand-600">
+            <div className="flex flex-col items-center gap-2">
+              <Rotate360Icon width={42} height={42} />
+              <span className="lat text-sm font-extrabold">360° / 3D</span>
+              <span className="text-[10px] font-bold text-ink-500">اسحب لتدوير المنتج</span>
+            </div>
+          </div>
+        ) : (
+          <img
+            src={file.thumbnail}
+            alt={file.fileName}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+          />
         )}
         {file.fileType === "video" && (
           <>
