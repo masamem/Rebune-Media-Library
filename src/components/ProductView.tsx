@@ -20,6 +20,7 @@ import {
   LayersIcon,
   SparkIcon,
   VideoIcon,
+  Rotate360Icon,
 } from "./Icons";
 
 interface GroupDef {
@@ -104,24 +105,27 @@ function FileRow({
       </div>
 
       <div className="flex shrink-0 flex-col gap-1.5 sm:flex-row sm:gap-2">
-        <button
-          onClick={async () => {
-            setBusy(true);
-            toast(`جارٍ تحميل «${file.fileName}»`, "download");
-            await downloadMedia(file);
-            setBusy(false);
-          }}
-          disabled={busy}
-          className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-4 text-[13px] font-extrabold text-white transition-all hover:bg-brand-600 active:scale-95 disabled:opacity-60"
-        >
-          <DownloadIcon width={15} height={15} className={busy ? "animate-bounce" : ""} />
-          تحميل
-        </button>
+        {file.fileType !== "3d" && (
+          <button
+            onClick={async () => {
+              setBusy(true);
+              toast(`جارٍ تحميل «${file.fileName}»`, "download");
+              await downloadMedia(file);
+              setBusy(false);
+            }}
+            disabled={busy}
+            className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-4 text-[13px] font-extrabold text-white transition-all hover:bg-brand-600 active:scale-95 disabled:opacity-60"
+          >
+            <DownloadIcon width={15} height={15} className={busy ? "animate-bounce" : ""} />
+            تحميل
+          </button>
+        )}
         <button
           onClick={() => onPreview(file)}
-          className="flex h-10 items-center justify-center rounded-lg border border-cream-300 bg-white px-3.5 text-[13px] font-bold text-ink-700 transition-all hover:border-brand-500 hover:text-brand-600 active:scale-95"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-cream-300 bg-white px-3.5 text-[13px] font-bold text-ink-700 transition-all hover:border-brand-500 hover:text-brand-600 active:scale-95"
         >
-          معاينة
+          {file.fileType === "3d" && <Rotate360Icon width={17} height={17} />}
+          {file.fileType === "3d" ? "عرض 360°" : "معاينة"}
         </button>
       </div>
     </li>
@@ -145,10 +149,13 @@ export default function ProductView({
   const [downloadingAll, setDownloadingAll] = useState(false);
   const others = groupByProduct(files).filter((g) => g.code !== group.code);
 
+  const downloadableFiles = group.files.filter((f) => f.fileType !== "3d");
+
   const handleDownloadAll = async () => {
+    if (downloadableFiles.length === 0) return;
     setDownloadingAll(true);
-    toast(`بدء تحميل جميع مواد ${group.code} (${group.files.length} ملفات)`, "download");
-    await downloadAll(group.files, (done, total) => {
+    toast(`بدء تحميل مواد ${group.code} (${downloadableFiles.length} ملفات)`, "download");
+    await downloadAll(downloadableFiles, (done, total) => {
       if (done === total) toast(`اكتمل تحميل ${total} ملفات بنجاح`, "success");
     });
     setDownloadingAll(false);
@@ -205,17 +212,21 @@ export default function ProductView({
               )}
             </div>
             <div className="shrink-0">
-              <button
-                onClick={handleDownloadAll}
-                disabled={downloadingAll}
-                className="flex h-14 w-full items-center justify-center gap-2.5 rounded-xl bg-ink-950 px-7 text-base font-extrabold text-cream-50 shadow-lift transition-all duration-200 hover:bg-brand-600 active:scale-[0.97] disabled:opacity-70 md:w-auto"
-              >
-                <DownloadIcon width={20} height={20} className={downloadingAll ? "animate-bounce" : ""} />
-                {downloadingAll ? "جارٍ التحميل..." : `تحميل الكل (${group.files.length})`}
-              </button>
-              <p className="mt-2 text-center text-[11px] font-bold text-ink-400">
-                سيتم تحميل جميع مواد <span className="lat">{group.code}</span> تباعًا
-              </p>
+              {downloadableFiles.length > 0 && (
+                <>
+                  <button
+                    onClick={handleDownloadAll}
+                    disabled={downloadingAll}
+                    className="flex h-14 w-full items-center justify-center gap-2.5 rounded-xl bg-ink-950 px-7 text-base font-extrabold text-cream-50 shadow-lift transition-all duration-200 hover:bg-brand-600 active:scale-[0.97] disabled:opacity-70 md:w-auto"
+                  >
+                    <DownloadIcon width={20} height={20} className={downloadingAll ? "animate-bounce" : ""} />
+                    {downloadingAll ? "جارٍ التحميل..." : `تحميل المواد (${downloadableFiles.length})`}
+                  </button>
+                  <p className="mt-2 text-center text-[11px] font-bold text-ink-400">
+                    ملفات 3D للعرض التفاعلي فقط ولا تدخل ضمن التحميل
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>

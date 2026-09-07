@@ -126,18 +126,20 @@ export default function FileCard({
 
         {/* الأزرار — ظاهرة دائمًا */}
         <div className="mt-auto flex gap-2 pt-3">
-          <button
-            onClick={handleDownload}
-            disabled={busy}
-            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 text-sm font-extrabold text-white shadow-card transition-all duration-200 hover:bg-brand-600 active:scale-[0.97] disabled:opacity-60"
-          >
-            <DownloadIcon width={17} height={17} className={busy ? "animate-bounce" : ""} />
-            {busy ? "جارٍ التحميل" : "تحميل"}
-          </button>
+          {file.fileType !== "3d" && (
+            <button
+              onClick={handleDownload}
+              disabled={busy}
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 text-sm font-extrabold text-white shadow-card transition-all duration-200 hover:bg-brand-600 active:scale-[0.97] disabled:opacity-60"
+            >
+              <DownloadIcon width={17} height={17} className={busy ? "animate-bounce" : ""} />
+              {busy ? "جارٍ التحميل" : "تحميل"}
+            </button>
+          )}
           <button
             onClick={handlePreview}
             aria-label={`معاينة ${file.fileName}`}
-            className="flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-cream-300 bg-white text-ink-700 transition-all duration-200 hover:border-brand-500 hover:text-brand-600 active:scale-95 md:w-auto md:px-4"
+            className={`flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-cream-300 bg-white text-ink-700 transition-all duration-200 hover:border-brand-500 hover:text-brand-600 active:scale-95 md:px-4 ${file.fileType === "3d" ? "flex-1" : "w-11 md:w-auto"}`}
           >
             <span title={file.fileType === "3d" ? "اسحب لتدوير المنتج 360°" : undefined}>
               {file.fileType === "3d" ? <Rotate360Icon width={19} height={19} /> : <EyeIcon width={17} height={17} />}

@@ -28,3 +28,8 @@ The filename must begin with the product code. For example `RE-2-104.glb` is ass
 
 - 3D model URLs now include the Google Drive `modifiedTime` as a version query (`?v=...`). Replacing a GLB in Drive changes the URL and avoids serving an older cached model.
 - The default 3D camera is framed closer (`camera-orbit` radius 12%, 18deg field of view) so product models open larger.
+
+
+## V6 viewer behavior
+- 3D preview uses a portrait viewer and automatic camera distance so the whole product stays visible.
+- 3D files are preview-only: download buttons are hidden for 3D items and 3D files are excluded from Download All.
