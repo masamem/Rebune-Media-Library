@@ -18,7 +18,7 @@ export function TypeBadge({
       className={`lat inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-extrabold tracking-wide ${
         type === "video"
           ? "bg-ink-950/85 text-cream-50 backdrop-blur-sm"
-          : type === "pdf"
+          : type === "pdf" || type === "3d"
             ? "bg-brand-500 text-white"
             : "bg-cream-50/90 text-ink-800 backdrop-blur-sm"
       }`}
@@ -132,7 +132,7 @@ export default function FileCard({
             className="flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-cream-300 bg-white text-ink-700 transition-all duration-200 hover:border-brand-500 hover:text-brand-600 active:scale-95 md:w-auto md:px-4"
           >
             <EyeIcon width={17} height={17} />
-            <span className="hidden text-sm font-bold md:inline">معاينة</span>
+            <span className="hidden text-sm font-bold md:inline">{file.fileType === "3d" ? "عرض 3D" : "معاينة"}</span>
           </button>
         </div>
       </div>

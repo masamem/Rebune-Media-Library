@@ -49,6 +49,12 @@ const GROUPS: GroupDef[] = [
     match: (f) => !!f.tags?.includes("design"),
   },
   {
+    key: "models",
+    label: "عرض المنتج ثلاثي الأبعاد",
+    icon: <LayersIcon width={18} height={18} />,
+    match: (f) => f.fileType === "3d",
+  },
+  {
     key: "pdfs",
     label: "كتالوجات ودلائل PDF",
     icon: <FileTextIcon width={18} height={18} />,
@@ -186,8 +192,17 @@ export default function ProductView({
               <p className="font-display mt-1.5 text-lg font-bold text-ink-800 md:text-xl">{group.name}</p>
               <p className="mt-2 text-[13px] font-bold text-ink-500">
                 <span className="lat">{group.files.length}</span> ملفًا جاهزًا للتحميل — صور، فيديوهات،
-                تصاميم ومستندات
+                تصاميم، نماذج 3D ومستندات
               </p>
+              {group.files.some((f) => f.fileType === "3d") && (
+                <button
+                  type="button"
+                  onClick={() => onPreview(group.files.find((f) => f.fileType === "3d")!)}
+                  className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-5 text-sm font-extrabold text-white shadow-card transition hover:bg-brand-600 active:scale-[0.97]"
+                >
+                  عرض 3D
+                </button>
+              )}
             </div>
             <div className="shrink-0">
               <button

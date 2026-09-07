@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatDate, type MediaFile } from "../data/media";
 import { downloadMedia } from "../lib/download";
 import { useToast } from "./Toast";
@@ -17,6 +17,7 @@ export default function PreviewModal({
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const modelRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     setZoom(1);
@@ -68,16 +69,16 @@ export default function PreviewModal({
   ];
 
   const isImage =
-    file.fileType === "image" ||
-    (file.fileType === "design" && imageExtensions.includes(extension));
+    file.fileType === "image" || imageExtensions.includes(extension);
 
   const isPdf = extension === "pdf";
+  const is3d = file.fileType === "3d" || extension === "glb" || extension === "gltf";
 
   const typeLabel =
-    file.fileType === "video"
-      ? "فيديو"
-      : file.fileType === "design"
-        ? "تصميم"
+    is3d
+      ? "عرض 3D"
+      : file.fileType === "video"
+        ? "فيديو"
         : file.fileType === "image"
           ? "صورة"
           : isPdf
@@ -134,7 +135,39 @@ export default function PreviewModal({
         </button>
 
         <div className="relative shrink-0 overflow-hidden bg-ink-950">
-          {file.fileType === "video" ? (
+          {is3d ? (
+            <div className="relative bg-gradient-to-b from-cream-100 to-cream-200">
+              <model-viewer
+                ref={modelRef}
+                key={file.id}
+                src={file.modelUrl || file.previewUrl}
+                alt={`نموذج ثلاثي الأبعاد ${displayName}`}
+                camera-controls
+                auto-rotate
+                shadow-intensity="1"
+                exposure="1"
+                interaction-prompt="auto"
+                touch-action="pan-y"
+                className="h-[58dvh] min-h-[420px] w-full sm:h-[62dvh]"
+              />
+              <div className="absolute bottom-3 start-3 end-3 flex items-center justify-between gap-2">
+                <span className="rounded-full bg-ink-950/75 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-md">
+                  اسحب للتدوير · قرّب بإصبعين أو عجلة الماوس
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const viewer = modelRef.current as HTMLElement & { resetTurntableRotation?: () => void; cameraOrbit?: string };
+                    viewer?.resetTurntableRotation?.();
+                    if (viewer) viewer.cameraOrbit = "auto auto auto";
+                  }}
+                  className="rounded-full bg-white/95 px-4 py-2 text-[11px] font-extrabold text-ink-800 shadow-card transition hover:text-brand-600"
+                >
+                  إعادة الكاميرا
+                </button>
+              </div>
+            </div>
+          ) : file.fileType === "video" ? (
             file.previewUrl.includes("drive.google.com/file/d/") ? (
               <iframe
                 key={file.id}

@@ -51,19 +51,29 @@ export default async function handler(
       }
     );
 
-    res.setHeader(
-      "Content-Type",
-      meta.data.mimeType || "application/octet-stream"
-    );
+    const fileName = meta.data.name || "file";
+    const extension = fileName.includes(".")
+      ? (fileName.split(".").pop() || "").toLowerCase()
+      : "";
+
+    const contentType =
+      extension === "glb"
+        ? "model/gltf-binary"
+        : extension === "gltf"
+          ? "model/gltf+json"
+          : meta.data.mimeType || "application/octet-stream";
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("X-Content-Type-Options", "nosniff");
 
     res.setHeader(
       "Content-Disposition",
       `inline; filename*=UTF-8''${encodeURIComponent(
-        meta.data.name || "file"
+        fileName
       )}`
     );
 
-    res.setHeader("Cache-Control", "private, max-age=3600");
+    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
 
     response.data.pipe(res);
   } catch (error) {

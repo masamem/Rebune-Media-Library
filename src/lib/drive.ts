@@ -17,10 +17,12 @@ export interface DriveItem {
   folderName: string;
   parentFolder: string;
   category: string;
-  fileType: "video" | "image" | "pdf" | "other";
+  mediaSection?: "فيديوهات" | "تصاميم" | "3D";
+  fileType: "video" | "image" | "pdf" | "3d" | "other";
   thumbnailUrl: string;
   previewUrl: string;
   downloadUrl: string;
+  modelUrl?: string;
 }
 
 const PLACEHOLDER = "/media/placeholder.svg";
@@ -47,7 +49,7 @@ export function toMediaFile(item: DriveItem): MediaFile {
   const productCode = codeMatch ? codeMatch[0].toUpperCase() : item.folderName.trim() || base;
   const productName = PRODUCT_NAMES[productCode] ?? (codeMatch ? `منتج ${productCode}` : base);
   const isDesign =
-    item.category === "تصاميم" || /social|تصميم|design|post|story|reel/i.test(item.name);
+    item.mediaSection === "تصاميم" || /social|تصميم|design|post|story|reel/i.test(item.name);
 
   return {
     id: item.id,
@@ -61,6 +63,7 @@ export function toMediaFile(item: DriveItem): MediaFile {
     thumbnail: item.thumbnailUrl || PLACEHOLDER,
     previewUrl: item.previewUrl,
     downloadUrl: item.downloadUrl,
+    modelUrl: item.modelUrl,
     size: item.size || "—",
     date: item.modifiedTime || new Date().toISOString(),
     tags: isDesign ? ["design"] : undefined,

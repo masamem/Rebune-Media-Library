@@ -59,7 +59,7 @@ export default function FilterChips({
 
   const kinds = useMemo(
     () =>
-      (["video", "image", "pdf", "other"] as const).filter((t) =>
+      (["video", "image", "pdf", "3d", "other"] as const).filter((t) =>
         files.some((f) => f.fileType === t),
       ),
     [files],

@@ -8,7 +8,7 @@
 
 /** التصنيف ديناميكي — يأتي من أسماء مجلدات Google Drive أو البيانات التجريبية */
 export type Category = string;
-export type FileType = "video" | "image" | "pdf" | "other";
+export type FileType = "video" | "image" | "pdf" | "3d" | "other";
 export type Section = "all" | "videos" | "gallery" | "designs" | "latest";
 
 export interface MediaFile {
@@ -28,6 +28,8 @@ export interface MediaFile {
   previewUrl: string;
   /** Google Drive download link (or local demo file) */
   downloadUrl: string;
+  /** Direct same-origin URL used by <model-viewer> for GLB/GLTF files. */
+  modelUrl?: string;
   size: string;
   /** ISO date */
   date: string;
@@ -252,11 +254,12 @@ export const TYPE_LABEL: Record<FileType, string> = {
   video: "فيديو",
   image: "صورة",
   pdf: "PDF",
+  "3d": "عرض 3D",
   other: "أخرى",
 };
 
 /** القيم العامة للنوع — أي قيمة غيرها تُعامل كامتداد (MP4 / MOV …) */
-export const KIND_VALUES: readonly string[] = ["video", "image", "pdf", "other"];
+export const KIND_VALUES: readonly string[] = ["video", "image", "pdf", "3d", "other"];
 
 export const SECTION_LABEL: Record<Section, string> = {
   all: "كل الملفات",

@@ -50,6 +50,14 @@ const DESIGN_FOLDER_NAMES = new Set([
   "design",
 ]);
 
+const MODEL_FOLDER_NAMES = new Set([
+  "3d",
+  "نماذج ثلاثية الأبعاد",
+  "ثلاثي الأبعاد",
+  "models",
+  "model",
+]);
+
 function categoryOf(name: string): string {
   const value = name.trim();
 
@@ -62,7 +70,7 @@ function categoryOf(name: string): string {
 
 function sectionOf(
   name: string
-): "فيديوهات" | "تصاميم" | null {
+): "فيديوهات" | "تصاميم" | "3D" | null {
   const value = name.trim();
   const lower = value.toLowerCase();
 
@@ -78,6 +86,13 @@ function sectionOf(
     DESIGN_FOLDER_NAMES.has(lower)
   ) {
     return "تصاميم";
+  }
+
+  if (
+    MODEL_FOLDER_NAMES.has(value) ||
+    MODEL_FOLDER_NAMES.has(lower)
+  ) {
+    return "3D";
   }
 
   return null;
@@ -137,7 +152,7 @@ interface CategoryFolder {
 interface MediaFolder {
   id: string;
   category: string;
-  mediaSection: "فيديوهات" | "تصاميم";
+  mediaSection: "فيديوهات" | "تصاميم" | "3D";
 }
 
 export default async function handler(
@@ -230,7 +245,7 @@ export default async function handler(
 
     /*
      * STEP 2
-     * Find فيديوهات / تصاميم
+     * Find فيديوهات / تصاميم / 3D
      * inside each category.
      */
 
@@ -282,7 +297,7 @@ export default async function handler(
 
     /*
      * STEP 3
-     * Read files from فيديوهات / تصاميم
+     * Read files from فيديوهات / تصاميم / 3D
      */
 
     const files: Record<string, unknown>[] = [];
@@ -332,11 +347,21 @@ export default async function handler(
               ).toLowerCase()
             : "";
 
-          const fileType: "video" | "design" =
-            mediaFolder.mediaSection ===
-            "فيديوهات"
-              ? "video"
-              : "design";
+          let fileType: "video" | "image" | "pdf" | "3d" | "other";
+
+          if (mediaFolder.mediaSection === "3D") {
+            // Only GLB/GLTF files are valid inside the 3D section.
+            if (extension !== "glb" && extension !== "gltf") continue;
+            fileType = "3d";
+          } else if (mediaFolder.mediaSection === "فيديوهات") {
+            fileType = "video";
+          } else if (extension === "pdf" || file.mimeType === "application/pdf") {
+            fileType = "pdf";
+          } else if ((file.mimeType || "").startsWith("image/")) {
+            fileType = "image";
+          } else {
+            fileType = "other";
+          }
 
           const isPdf =
             extension === "pdf" ||
@@ -348,6 +373,8 @@ export default async function handler(
           const previewUrl = `/api/file?id=${file.id}`;
 
           const downloadUrl = `/api/file?id=${file.id}`;
+
+          const modelUrl = fileType === "3d" ? `/api/file?id=${file.id}` : undefined;
           
           files.push({
             id: file.id,
@@ -370,6 +397,8 @@ export default async function handler(
 
             fileType,
 
+            folderName: mediaFolder.mediaSection,
+            modelUrl,
             thumbnailUrl,
             previewUrl,
             downloadUrl,
