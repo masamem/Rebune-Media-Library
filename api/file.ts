@@ -73,7 +73,9 @@ export default async function handler(
       )}`
     );
 
-    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
+    // The media URL includes ?v=<Drive modifiedTime>. A changed Drive file therefore
+    // gets a new URL immediately, while unchanged models can be cached safely.
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
 
     response.data.pipe(res);
   } catch (error) {

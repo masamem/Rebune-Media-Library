@@ -374,7 +374,11 @@ export default async function handler(
 
           const downloadUrl = `/api/file?id=${file.id}`;
 
-          const modelUrl = fileType === "3d" ? `/api/file?id=${file.id}` : undefined;
+          const version = encodeURIComponent(file.modifiedTime ?? "");
+          const modelUrl =
+            fileType === "3d"
+              ? `/api/file?id=${file.id}&v=${version}`
+              : undefined;
           
           files.push({
             id: file.id,

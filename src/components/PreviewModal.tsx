@@ -144,9 +144,9 @@ export default function PreviewModal({
                 alt={`نموذج ثلاثي الأبعاد ${displayName}`}
                 camera-controls
                 auto-rotate
-                camera-orbit="0deg 75deg 38%"
-                field-of-view="30deg"
-                min-field-of-view="18deg"
+                camera-orbit="0deg 75deg 12%"
+                field-of-view="18deg"
+                min-field-of-view="8deg"
                 max-field-of-view="45deg"
                 shadow-intensity="1.2"
                 exposure="1.1"
@@ -163,7 +163,7 @@ export default function PreviewModal({
                   onClick={() => {
                     const viewer = modelRef.current as HTMLElement & { resetTurntableRotation?: () => void; cameraOrbit?: string };
                     viewer?.resetTurntableRotation?.();
-                    if (viewer) viewer.cameraOrbit = "0deg 75deg 38%";
+                    if (viewer) viewer.cameraOrbit = "0deg 75deg 12%";
                   }}
                   className="rounded-full bg-white/95 px-4 py-2 text-[11px] font-extrabold text-ink-800 shadow-card transition hover:text-brand-600"
                 >
