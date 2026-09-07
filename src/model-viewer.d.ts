@@ -11,6 +11,7 @@ declare global {
         "shadow-intensity"?: string;
         exposure?: string;
         "camera-orbit"?: string;
+        "camera-target"?: string;
         "field-of-view"?: string;
         "min-field-of-view"?: string;
         "max-field-of-view"?: string;

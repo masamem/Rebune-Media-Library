@@ -136,7 +136,7 @@ export default function PreviewModal({
 
         <div className="relative shrink-0 overflow-hidden bg-ink-950">
           {is3d ? (
-            <div className="relative bg-gradient-to-b from-cream-100 to-cream-200">
+            <div dir="ltr" className="relative bg-gradient-to-b from-cream-100 to-cream-200">
               <model-viewer
                 ref={modelRef}
                 key={file.id}
@@ -144,15 +144,16 @@ export default function PreviewModal({
                 alt={`نموذج ثلاثي الأبعاد ${displayName}`}
                 camera-controls
                 auto-rotate
-                camera-orbit="0deg 75deg 12%"
-                field-of-view="18deg"
-                min-field-of-view="8deg"
+                camera-orbit="0deg 75deg 8%"
+                camera-target="auto auto auto"
+                field-of-view="16deg"
+                min-field-of-view="6deg"
                 max-field-of-view="45deg"
                 shadow-intensity="1.2"
                 exposure="1.1"
                 interaction-prompt="auto"
                 touch-action="pan-y"
-                className="h-[58dvh] min-h-[420px] w-full sm:h-[62dvh]"
+                className="block h-[58dvh] min-h-[420px] w-full sm:h-[62dvh]"
               />
               <div className="absolute bottom-3 start-3 end-3 flex items-center justify-between gap-2">
                 <span className="rounded-full bg-ink-950/75 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-md">
@@ -163,7 +164,7 @@ export default function PreviewModal({
                   onClick={() => {
                     const viewer = modelRef.current as HTMLElement & { resetTurntableRotation?: () => void; cameraOrbit?: string };
                     viewer?.resetTurntableRotation?.();
-                    if (viewer) viewer.cameraOrbit = "0deg 75deg 12%";
+                    if (viewer) viewer.cameraOrbit = "0deg 75deg 8%";
                   }}
                   className="rounded-full bg-white/95 px-4 py-2 text-[11px] font-extrabold text-ink-800 shadow-card transition hover:text-brand-600"
                 >
