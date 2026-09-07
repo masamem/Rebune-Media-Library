@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   TYPE_LABEL,
   formatDate,
@@ -182,7 +182,13 @@ export default function ProductView({
 }) {
   const toast = useToast();
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [showAllOthers, setShowAllOthers] = useState(false);
   const others = groupByProduct(files).filter((g) => g.code !== group.code);
+  const visibleOthers = showAllOthers ? others : others.slice(0, 12);
+
+  useEffect(() => {
+    setShowAllOthers(false);
+  }, [group.code]);
 
   const downloadableFiles = group.files.filter((f) => f.fileType !== "3d");
 
@@ -239,9 +245,10 @@ export default function ProductView({
                 <button
                   type="button"
                   onClick={() => onPreview(group.files.find((f) => f.fileType === "3d")!)}
-                  className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-5 text-sm font-extrabold text-white shadow-card transition hover:bg-brand-600 active:scale-[0.97]"
+                  className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-extrabold text-white shadow-card transition hover:bg-brand-600 active:scale-[0.97]"
                 >
-                  عرض 3D
+                  <Rotate360Icon width={18} height={18} />
+                  عرض 360°
                 </button>
               )}
             </div>
@@ -298,7 +305,7 @@ export default function ProductView({
           <h2 className="font-display text-lg font-extrabold text-ink-950">منتجات أخرى</h2>
         </div>
         <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:px-0">
-          {others.map((p) => (
+          {visibleOthers.map((p) => (
             <button
               key={p.code}
               onClick={() => onOpenProduct(p.code)}
@@ -315,6 +322,16 @@ export default function ProductView({
             </button>
           ))}
         </div>
+        {others.length > 12 && (
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => setShowAllOthers((v) => !v)}
+              className="rounded-full border border-cream-300 bg-cream-50 px-5 py-2 text-[13px] font-extrabold text-ink-700 shadow-card transition-all hover:border-brand-500 hover:text-brand-600 active:scale-95"
+            >
+              {showAllOthers ? "عرض أقل" : `عرض المزيد (${others.length - 12})`}
+            </button>
+          </div>
+        )}
       </Reveal>
     </div>
   );

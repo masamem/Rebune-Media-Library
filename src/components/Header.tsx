@@ -5,6 +5,7 @@ const NAV: { key: Section; label: string }[] = [
   { key: "all", label: "الرئيسية" },
   { key: "videos", label: "الفيديوهات" },
   { key: "designs", label: "التصاميم" },
+  { key: "products3d", label: "منتجات 3D" },
   { key: "latest", label: "أحدث الملفات" },
 ];
 

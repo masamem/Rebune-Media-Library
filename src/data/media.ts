@@ -9,7 +9,7 @@
 /** التصنيف ديناميكي — يأتي من أسماء مجلدات Google Drive أو البيانات التجريبية */
 export type Category = string;
 export type FileType = "video" | "image" | "pdf" | "3d" | "other";
-export type Section = "all" | "videos" | "gallery" | "designs" | "latest";
+export type Section = "all" | "videos" | "gallery" | "designs" | "products3d" | "latest";
 
 export interface MediaFile {
   id: string;
@@ -266,6 +266,7 @@ export const SECTION_LABEL: Record<Section, string> = {
   videos: "الفيديوهات",
   gallery: "الصور والتصاميم",
   designs: "التصاميم",
+  products3d: "منتجات 3D",
   latest: "أحدث الملفات",
 };
 
@@ -298,6 +299,8 @@ export function filterFiles(
   else if (opts.section === "gallery") list = list.filter((f) => f.fileType === "image");
   else if (opts.section === "designs")
     list = list.filter((f) => f.tags?.includes("design") || f.category === "تصاميم");
+  else if (opts.section === "products3d")
+    list = list.filter((f) => f.fileType === "3d");
   else if (opts.section === "latest") list = list.slice(0, 8);
 
   if (opts.category !== "all") list = list.filter((f) => f.category === opts.category);
