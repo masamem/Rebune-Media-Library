@@ -16,9 +16,17 @@
  * Product code is extracted from the file name.
  *
  * Examples:
- * RE-2211-video-01.mp4   -> RE-2211
- * RE-2211-design-01.jpg  -> RE-2211
- * RE-1-102-model.glb     -> RE-1-102
+ * RE-2211.jpg             -> RE-2211
+ * RE-2211-1.jpg           -> RE-2211
+ * RE-2211-video-01.mp4    -> RE-2211
+ * RE-2223-4-5.jpg         -> RE-2223
+ *
+ * RE-1-102.jpg            -> RE-1-102
+ * RE-2-182 أسود.MOV       -> RE-2-182
+ * RE-10-041.jpg           -> RE-10-041
+ * RE-16-004-copy.jpg      -> RE-16-004
+ *
+ * RE0003-BLUE.jpg         -> RE-0003
  */
 
 import { google } from "googleapis";
@@ -111,14 +119,63 @@ function sectionOf(name: string): MediaSection | null {
   return null;
 }
 
+/**
+ * Extract and normalize Rebune product codes.
+ *
+ * Important:
+ * RE-2211-1.jpg       -> RE-2211
+ * RE-2223-4-5.jpg     -> RE-2223
+ * RE-2-182 black.mov  -> RE-2-182
+ * RE-10-041.jpg       -> RE-10-041
+ * RE0003-BLUE.jpg     -> RE-0003
+ */
 function extractProductCode(fileName: string): string {
-  const name = fileName.trim();
+  const name = fileName.trim().toUpperCase();
 
-  const match = name.match(
-    /^(RE-\d+(?:-\d+)*)(?:-|_|\.|$)/i
+  /*
+   * Family style:
+   * RE-1-102
+   * RE-2-182
+   * RE-10-041
+   * RE-16-004
+   */
+  const familyMatch = name.match(
+    /^RE[-_]?(\d{1,2})[-_](\d{3})(?=[^0-9]|$)/
   );
 
-  return match ? match[1].toUpperCase() : "";
+  if (familyMatch) {
+    return `RE-${familyMatch[1]}-${familyMatch[2]}`;
+  }
+
+  /*
+   * Standard four-digit style:
+   * RE-2211
+   * RE2211
+   * RE-2211-1
+   * RE-2223-4-5
+   */
+  const standardMatch = name.match(
+    /^RE[-_]?(\d{4})(?=[^0-9]|$)/
+  );
+
+  if (standardMatch) {
+    return `RE-${standardMatch[1]}`;
+  }
+
+  /*
+   * Short style:
+   * RE-16
+   * RE16
+   */
+  const shortMatch = name.match(
+    /^RE[-_]?(\d{1,3})(?=[^0-9]|$)/
+  );
+
+  if (shortMatch) {
+    return `RE-${shortMatch[1]}`;
+  }
+
+  return "";
 }
 
 function formatSize(bytes?: string | null): string {
@@ -127,7 +184,9 @@ function formatSize(bytes?: string | null): string {
   if (!Number.isFinite(b) || b <= 0) return "—";
   if (b < 1024) return `${b} B`;
   if (b < 1024 ** 2) return `${Math.round(b / 1024)} KB`;
-  if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)} MB`;
+  if (b < 1024 ** 3) {
+    return `${(b / 1024 ** 2).toFixed(1)} MB`;
+  }
 
   return `${(b / 1024 ** 3).toFixed(2)} GB`;
 }
@@ -181,18 +240,29 @@ export default async function handler(
       auth,
     });
 
+    /*
+     * STEP 1:
+     * rebune-media-library
+     * ├── تجميلي
+     * └── منزلي
+     */
     const categoryFolders: CategoryFolder[] = [];
 
     let categoryPageToken: string | undefined;
 
     do {
       const page: any = await drive.files.list({
-        q: `'${esc(rootId)}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+        q: `'${esc(
+          rootId
+        )}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+
         fields: FIELDS,
         pageSize: 1000,
         pageToken: categoryPageToken,
+
         supportsAllDrives: true,
         includeItemsFromAllDrives: true,
+
         orderBy: "name",
       });
 
@@ -209,6 +279,11 @@ export default async function handler(
         page.data.nextPageToken ?? undefined;
     } while (categoryPageToken);
 
+    /*
+     * STEP 2:
+     * Find:
+     * فيديوهات / تصاميم / 3D
+     */
     const mediaFolders: MediaFolder[] = [];
 
     for (const categoryFolder of categoryFolders) {
@@ -216,19 +291,25 @@ export default async function handler(
 
       do {
         const page: any = await drive.files.list({
-          q: `'${esc(categoryFolder.id)}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+          q: `'${esc(
+            categoryFolder.id
+          )}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+
           fields: FIELDS,
           pageSize: 1000,
           pageToken,
+
           supportsAllDrives: true,
           includeItemsFromAllDrives: true,
+
           orderBy: "name",
         });
 
         for (const folder of page.data.files ?? []) {
           if (!folder.id || !folder.name) continue;
 
-          const mediaSection = sectionOf(folder.name);
+          const mediaSection =
+            sectionOf(folder.name);
 
           if (!mediaSection) continue;
 
@@ -244,6 +325,10 @@ export default async function handler(
       } while (pageToken);
     }
 
+    /*
+     * STEP 3:
+     * Read files from each media folder.
+     */
     const files: Record<string, unknown>[] = [];
 
     for (const mediaFolder of mediaFolders) {
@@ -251,12 +336,17 @@ export default async function handler(
 
       do {
         const page: any = await drive.files.list({
-          q: `'${esc(mediaFolder.id)}' in parents and trashed = false and mimeType != '${FOLDER_MIME}'`,
+          q: `'${esc(
+            mediaFolder.id
+          )}' in parents and trashed = false and mimeType != '${FOLDER_MIME}'`,
+
           fields: FIELDS,
           pageSize: 1000,
           pageToken,
+
           supportsAllDrives: true,
           includeItemsFromAllDrives: true,
+
           orderBy: "name",
         });
 
@@ -270,11 +360,14 @@ export default async function handler(
             console.warn(
               `[media] Product code not found: ${file.name}`
             );
+
             continue;
           }
 
           const extension = file.name.includes(".")
-            ? (file.name.split(".").pop() ?? "").toLowerCase()
+            ? (
+                file.name.split(".").pop() ?? ""
+              ).toLowerCase()
             : "";
 
           let fileType:
@@ -321,15 +414,28 @@ export default async function handler(
           files.push({
             id: file.id,
             name: file.name,
+
             extension,
             mimeType: file.mimeType ?? "",
+
             size: formatSize(file.size),
-            modifiedTime: file.modifiedTime ?? "",
+
+            modifiedTime:
+              file.modifiedTime ?? "",
+
             productCode,
-            category: mediaFolder.category || "عام",
-            mediaSection: mediaFolder.mediaSection,
+
+            category:
+              mediaFolder.category || "عام",
+
+            mediaSection:
+              mediaFolder.mediaSection,
+
             fileType,
-            folderName: mediaFolder.mediaSection,
+
+            folderName:
+              mediaFolder.mediaSection,
+
             thumbnailUrl,
             previewUrl,
             downloadUrl,
