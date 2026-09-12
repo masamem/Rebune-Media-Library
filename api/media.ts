@@ -1,22 +1,31 @@
 /**
  * /api/media — Vercel Serverless Function
+ * -----------------------------------------------------------
  *
  * Google Drive structure:
  *
  * rebune-media-library
  * ├── تجميلي
- * │   ├── فيديوهات
- * │   └── تصاميم
+ * │   └── RE-2211
+ * │       ├── فيديوهات
+ * │       ├── تصاميم
+ * │       └── 3D
  * └── منزلي
- *     ├── فيديوهات
- *     └── تصاميم
+ *     └── RE-1-102
+ *         ├── فيديوهات
+ *         ├── تصاميم
+ *         └── 3D
  *
- * Product code is extracted from the file name.
+ * Rules:
+ * - productCode comes from the product folder name.
+ * - files are read only from فيديوهات / تصاميم / 3D.
+ * - product image folders are ignored.
+ * - 3D accepts GLB / GLTF only.
  *
- * Examples:
- * RE-2211-video-01.mp4  -> RE-2211
- * RE-2211-design-01.jpg -> RE-2211
- * RE-3312-catalog.pdf   -> RE-3312
+ * GOOGLE_SERVICE_ACCOUNT_EMAIL
+ * GOOGLE_PRIVATE_KEY
+ * GOOGLE_DRIVE_FOLDER_ID
+ * are server-side only.
  */
 
 import { google } from "googleapis";
@@ -58,6 +67,29 @@ const MODEL_FOLDER_NAMES = new Set([
   "model",
 ]);
 
+const IGNORED_FOLDER_NAMES = new Set([
+  "صور",
+  "صورة",
+  "صور المنتج",
+  "صور منتجات",
+  "images",
+  "image",
+  "photos",
+  "photo",
+  "product images",
+  "product photos",
+]);
+
+type MediaSection = "فيديوهات" | "تصاميم" | "3D";
+
+interface QueueItem {
+  id: string;
+  depth: number;
+  category: string;
+  productCode: string;
+  mediaSection: MediaSection | null;
+}
+
 function categoryOf(name: string): string {
   const value = name.trim();
 
@@ -68,9 +100,7 @@ function categoryOf(name: string): string {
   );
 }
 
-function sectionOf(
-  name: string
-): "فيديوهات" | "تصاميم" | "3D" | null {
+function sectionOf(name: string): MediaSection | null {
   const value = name.trim();
   const lower = value.toLowerCase();
 
@@ -98,22 +128,13 @@ function sectionOf(
   return null;
 }
 
-/**
- * Extract product code from filename.
- *
- * Examples:
- * RE-2211-video-01.mp4  -> RE-2211
- * RE-1-102-video-01.mp4 -> RE-1-102
- * RE-3312-catalog.pdf   -> RE-3312
- */
-function extractProductCode(fileName: string): string {
-  const name = fileName.trim();
+function isIgnoredFolder(name: string): boolean {
+  const value = name.trim();
 
-  const match = name.match(
-    /^(RE-\d+(?:-\d+)*)(?:-|_|\.|$)/i
+  return (
+    IGNORED_FOLDER_NAMES.has(value) ||
+    IGNORED_FOLDER_NAMES.has(value.toLowerCase())
   );
-
-  return match ? match[1].toUpperCase() : "";
 }
 
 function formatSize(bytes?: string | null): string {
@@ -142,17 +163,6 @@ function esc(id: string): string {
   return id
     .replace(/\\/g, "\\\\")
     .replace(/'/g, "\\'");
-}
-
-interface CategoryFolder {
-  id: string;
-  category: string;
-}
-
-interface MediaFolder {
-  id: string;
-  category: string;
-  mediaSection: "فيديوهات" | "تصاميم" | "3D";
 }
 
 export default async function handler(
@@ -199,118 +209,36 @@ export default async function handler(
     });
 
     /*
-     * STEP 1
-     * Read category folders:
+     * Tree traversal:
      *
-     * rebune-media-library
-     * ├── تجميلي
-     * └── منزلي
+     * depth 0 = root
+     * depth 1 = category
+     * depth 2 = product
+     * depth 3 = media section
      */
+    const queue: QueueItem[] = [
+      {
+        id: rootId,
+        depth: 0,
+        category: "",
+        productCode: "",
+        mediaSection: null,
+      },
+    ];
 
-    const categoryFolders: CategoryFolder[] = [];
-
-    let categoryPageToken: string | undefined =
-      undefined;
-
-    do {
-      const page: any = await drive.files.list({
-        q: `'${esc(
-          rootId
-        )}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
-
-        fields: FIELDS,
-        pageSize: 1000,
-        pageToken: categoryPageToken,
-
-        supportsAllDrives: true,
-        includeItemsFromAllDrives: true,
-
-        orderBy: "name",
-      });
-
-      for (const folder of page.data.files ?? []) {
-        if (!folder.id || !folder.name) {
-          continue;
-        }
-
-        categoryFolders.push({
-          id: folder.id,
-          category: categoryOf(folder.name),
-        });
-      }
-
-      categoryPageToken =
-        page.data.nextPageToken ?? undefined;
-    } while (categoryPageToken);
-
-    /*
-     * STEP 2
-     * Find فيديوهات / تصاميم / 3D
-     * inside each category.
-     */
-
-    const mediaFolders: MediaFolder[] = [];
-
-    for (const categoryFolder of categoryFolders) {
-      let pageToken: string | undefined =
-        undefined;
-
-      do {
-        const page: any = await drive.files.list({
-          q: `'${esc(
-            categoryFolder.id
-          )}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
-
-          fields: FIELDS,
-          pageSize: 1000,
-          pageToken,
-
-          supportsAllDrives: true,
-          includeItemsFromAllDrives: true,
-
-          orderBy: "name",
-        });
-
-        for (const folder of page.data.files ?? []) {
-          if (!folder.id || !folder.name) {
-            continue;
-          }
-
-          const mediaSection =
-            sectionOf(folder.name);
-
-          if (!mediaSection) {
-            continue;
-          }
-
-          mediaFolders.push({
-            id: folder.id,
-            category: categoryFolder.category,
-            mediaSection,
-          });
-        }
-
-        pageToken =
-          page.data.nextPageToken ?? undefined;
-      } while (pageToken);
-    }
-
-    /*
-     * STEP 3
-     * Read files from فيديوهات / تصاميم / 3D
-     */
+    const visited = new Set<string>([rootId]);
 
     const files: Record<string, unknown>[] = [];
 
-    for (const mediaFolder of mediaFolders) {
+    for (let index = 0; index < queue.length; index++) {
+      const folder = queue[index];
+
       let pageToken: string | undefined =
         undefined;
 
       do {
         const page: any = await drive.files.list({
-          q: `'${esc(
-            mediaFolder.id
-          )}' in parents and trashed = false and mimeType != '${FOLDER_MIME}'`,
+          q: `'${esc(folder.id)}' in parents and trashed = false`,
 
           fields: FIELDS,
           pageSize: 1000,
@@ -327,17 +255,87 @@ export default async function handler(
             continue;
           }
 
-          const productCode =
-            extractProductCode(file.name);
+          /*
+           * Folder
+           */
+          if (file.mimeType === FOLDER_MIME) {
+            if (visited.has(file.id)) {
+              continue;
+            }
+
+            visited.add(file.id);
+
+            if (isIgnoredFolder(file.name)) {
+              continue;
+            }
+
+            /*
+             * Root -> category
+             */
+            if (folder.depth === 0) {
+              queue.push({
+                id: file.id,
+                depth: 1,
+                category: categoryOf(file.name),
+                productCode: "",
+                mediaSection: null,
+              });
+
+              continue;
+            }
+
+            /*
+             * Category -> product
+             */
+            if (folder.depth === 1) {
+              queue.push({
+                id: file.id,
+                depth: 2,
+                category: folder.category,
+                productCode: file.name.trim(),
+                mediaSection: null,
+              });
+
+              continue;
+            }
+
+            /*
+             * Product -> media section
+             */
+            if (folder.depth === 2) {
+              const section =
+                sectionOf(file.name);
+
+              if (!section) {
+                continue;
+              }
+
+              queue.push({
+                id: file.id,
+                depth: 3,
+                category: folder.category,
+                productCode: folder.productCode,
+                mediaSection: section,
+              });
+
+              continue;
+            }
+
+            /*
+             * Do not scan deeper than section level.
+             */
+            continue;
+          }
 
           /*
-           * Ignore files without a valid product code.
+           * Files are accepted only inside:
+           * product -> فيديوهات / تصاميم / 3D
            */
-          if (!productCode) {
-            console.warn(
-              `[media] Product code not found: ${file.name}`
-            );
-
+          if (
+            folder.depth !== 3 ||
+            !folder.mediaSection ||
+            !folder.productCode
+          ) {
             continue;
           }
 
@@ -347,20 +345,29 @@ export default async function handler(
               ).toLowerCase()
             : "";
 
-          let fileType: "video" | "image" | "pdf" | "3d" | "other";
+          let fileType:
+            | "video"
+            | "design"
+            | "3d";
 
-          if (mediaFolder.mediaSection === "3D") {
-            // Only GLB/GLTF files are valid inside the 3D section.
-            if (extension !== "glb" && extension !== "gltf") continue;
+          if (folder.mediaSection === "3D") {
+            /*
+             * Only GLB / GLTF models.
+             */
+            if (
+              extension !== "glb" &&
+              extension !== "gltf"
+            ) {
+              continue;
+            }
+
             fileType = "3d";
-          } else if (mediaFolder.mediaSection === "فيديوهات") {
+          } else if (
+            folder.mediaSection === "فيديوهات"
+          ) {
             fileType = "video";
-          } else if (extension === "pdf" || file.mimeType === "application/pdf") {
-            fileType = "pdf";
-          } else if ((file.mimeType || "").startsWith("image/")) {
-            fileType = "image";
           } else {
-            fileType = "other";
+            fileType = "design";
           }
 
           const isPdf =
@@ -370,16 +377,26 @@ export default async function handler(
           const thumbnailUrl =
             `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
 
-          const previewUrl = `/api/file?id=${file.id}`;
+          /*
+           * Proxy Drive through our own API.
+           * This avoids depending on public Drive sharing.
+           */
+          const previewUrl =
+            `/api/file?id=${file.id}`;
 
-          const downloadUrl = `/api/file?id=${file.id}`;
+          const downloadUrl =
+            `/api/file?id=${file.id}`;
 
-          const version = encodeURIComponent(file.modifiedTime ?? "");
+          const version =
+            encodeURIComponent(
+              file.modifiedTime ?? ""
+            );
+
           const modelUrl =
             fileType === "3d"
               ? `/api/file?id=${file.id}&v=${version}`
               : undefined;
-          
+
           files.push({
             id: file.id,
             name: file.name,
@@ -388,29 +405,36 @@ export default async function handler(
             mimeType: file.mimeType ?? "",
 
             size: formatSize(file.size),
+
             modifiedTime:
               file.modifiedTime ?? "",
 
-            productCode,
+            productCode:
+              folder.productCode,
 
             category:
-              mediaFolder.category || "عام",
+              folder.category || "عام",
 
             mediaSection:
-              mediaFolder.mediaSection,
+              folder.mediaSection,
 
             fileType,
 
-            folderName: mediaFolder.mediaSection,
-            modelUrl,
+            folderName:
+              folder.mediaSection,
+
             thumbnailUrl,
             previewUrl,
             downloadUrl,
+            modelUrl,
+
+            isPdf,
           });
         }
 
         pageToken =
-          page.data.nextPageToken ?? undefined;
+          page.data.nextPageToken ??
+          undefined;
       } while (pageToken);
     }
 
