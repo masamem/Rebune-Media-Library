@@ -1,31 +1,24 @@
 /**
  * /api/media — Vercel Serverless Function
- * -----------------------------------------------------------
  *
  * Google Drive structure:
  *
  * rebune-media-library
  * ├── تجميلي
- * │   └── RE-2211
- * │       ├── فيديوهات
- * │       ├── تصاميم
- * │       └── 3D
+ * │   ├── فيديوهات
+ * │   ├── تصاميم
+ * │   └── 3D
  * └── منزلي
- *     └── RE-1-102
- *         ├── فيديوهات
- *         ├── تصاميم
- *         └── 3D
+ *     ├── فيديوهات
+ *     ├── تصاميم
+ *     └── 3D
  *
- * Rules:
- * - productCode comes from the product folder name.
- * - files are read only from فيديوهات / تصاميم / 3D.
- * - product image folders are ignored.
- * - 3D accepts GLB / GLTF only.
+ * Product code is extracted from the file name.
  *
- * GOOGLE_SERVICE_ACCOUNT_EMAIL
- * GOOGLE_PRIVATE_KEY
- * GOOGLE_DRIVE_FOLDER_ID
- * are server-side only.
+ * Examples:
+ * RE-2211-video-01.mp4   -> RE-2211
+ * RE-2211-design-01.jpg  -> RE-2211
+ * RE-1-102-model.glb     -> RE-1-102
  */
 
 import { google } from "googleapis";
@@ -67,27 +60,17 @@ const MODEL_FOLDER_NAMES = new Set([
   "model",
 ]);
 
-const IGNORED_FOLDER_NAMES = new Set([
-  "صور",
-  "صورة",
-  "صور المنتج",
-  "صور منتجات",
-  "images",
-  "image",
-  "photos",
-  "photo",
-  "product images",
-  "product photos",
-]);
-
 type MediaSection = "فيديوهات" | "تصاميم" | "3D";
 
-interface QueueItem {
+interface CategoryFolder {
   id: string;
-  depth: number;
   category: string;
-  productCode: string;
-  mediaSection: MediaSection | null;
+}
+
+interface MediaFolder {
+  id: string;
+  category: string;
+  mediaSection: MediaSection;
 }
 
 function categoryOf(name: string): string {
@@ -128,33 +111,23 @@ function sectionOf(name: string): MediaSection | null {
   return null;
 }
 
-function isIgnoredFolder(name: string): boolean {
-  const value = name.trim();
+function extractProductCode(fileName: string): string {
+  const name = fileName.trim();
 
-  return (
-    IGNORED_FOLDER_NAMES.has(value) ||
-    IGNORED_FOLDER_NAMES.has(value.toLowerCase())
+  const match = name.match(
+    /^(RE-\d+(?:-\d+)*)(?:-|_|\.|$)/i
   );
+
+  return match ? match[1].toUpperCase() : "";
 }
 
 function formatSize(bytes?: string | null): string {
   const b = Number(bytes ?? 0);
 
-  if (!Number.isFinite(b) || b <= 0) {
-    return "—";
-  }
-
-  if (b < 1024) {
-    return `${b} B`;
-  }
-
-  if (b < 1024 ** 2) {
-    return `${Math.round(b / 1024)} KB`;
-  }
-
-  if (b < 1024 ** 3) {
-    return `${(b / 1024 ** 2).toFixed(1)} MB`;
-  }
+  if (!Number.isFinite(b) || b <= 0) return "—";
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 ** 2) return `${Math.round(b / 1024)} KB`;
+  if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)} MB`;
 
   return `${(b / 1024 ** 3).toFixed(2)} GB`;
 }
@@ -208,141 +181,100 @@ export default async function handler(
       auth,
     });
 
-    /*
-     * Tree traversal:
-     *
-     * depth 0 = root
-     * depth 1 = category
-     * depth 2 = product
-     * depth 3 = media section
-     */
-    const queue: QueueItem[] = [
-      {
-        id: rootId,
-        depth: 0,
-        category: "",
-        productCode: "",
-        mediaSection: null,
-      },
-    ];
+    const categoryFolders: CategoryFolder[] = [];
 
-    const visited = new Set<string>([rootId]);
+    let categoryPageToken: string | undefined;
 
-    const files: Record<string, unknown>[] = [];
+    do {
+      const page: any = await drive.files.list({
+        q: `'${esc(rootId)}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+        fields: FIELDS,
+        pageSize: 1000,
+        pageToken: categoryPageToken,
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+        orderBy: "name",
+      });
 
-    for (let index = 0; index < queue.length; index++) {
-      const folder = queue[index];
+      for (const folder of page.data.files ?? []) {
+        if (!folder.id || !folder.name) continue;
 
-      let pageToken: string | undefined =
-        undefined;
+        categoryFolders.push({
+          id: folder.id,
+          category: categoryOf(folder.name),
+        });
+      }
+
+      categoryPageToken =
+        page.data.nextPageToken ?? undefined;
+    } while (categoryPageToken);
+
+    const mediaFolders: MediaFolder[] = [];
+
+    for (const categoryFolder of categoryFolders) {
+      let pageToken: string | undefined;
 
       do {
         const page: any = await drive.files.list({
-          q: `'${esc(folder.id)}' in parents and trashed = false`,
-
+          q: `'${esc(categoryFolder.id)}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
           fields: FIELDS,
           pageSize: 1000,
           pageToken,
-
           supportsAllDrives: true,
           includeItemsFromAllDrives: true,
+          orderBy: "name",
+        });
 
+        for (const folder of page.data.files ?? []) {
+          if (!folder.id || !folder.name) continue;
+
+          const mediaSection = sectionOf(folder.name);
+
+          if (!mediaSection) continue;
+
+          mediaFolders.push({
+            id: folder.id,
+            category: categoryFolder.category,
+            mediaSection,
+          });
+        }
+
+        pageToken =
+          page.data.nextPageToken ?? undefined;
+      } while (pageToken);
+    }
+
+    const files: Record<string, unknown>[] = [];
+
+    for (const mediaFolder of mediaFolders) {
+      let pageToken: string | undefined;
+
+      do {
+        const page: any = await drive.files.list({
+          q: `'${esc(mediaFolder.id)}' in parents and trashed = false and mimeType != '${FOLDER_MIME}'`,
+          fields: FIELDS,
+          pageSize: 1000,
+          pageToken,
+          supportsAllDrives: true,
+          includeItemsFromAllDrives: true,
           orderBy: "name",
         });
 
         for (const file of page.data.files ?? []) {
-          if (!file.id || !file.name) {
-            continue;
-          }
+          if (!file.id || !file.name) continue;
 
-          /*
-           * Folder
-           */
-          if (file.mimeType === FOLDER_MIME) {
-            if (visited.has(file.id)) {
-              continue;
-            }
+          const productCode =
+            extractProductCode(file.name);
 
-            visited.add(file.id);
-
-            if (isIgnoredFolder(file.name)) {
-              continue;
-            }
-
-            /*
-             * Root -> category
-             */
-            if (folder.depth === 0) {
-              queue.push({
-                id: file.id,
-                depth: 1,
-                category: categoryOf(file.name),
-                productCode: "",
-                mediaSection: null,
-              });
-
-              continue;
-            }
-
-            /*
-             * Category -> product
-             */
-            if (folder.depth === 1) {
-              queue.push({
-                id: file.id,
-                depth: 2,
-                category: folder.category,
-                productCode: file.name.trim(),
-                mediaSection: null,
-              });
-
-              continue;
-            }
-
-            /*
-             * Product -> media section
-             */
-            if (folder.depth === 2) {
-              const section =
-                sectionOf(file.name);
-
-              if (!section) {
-                continue;
-              }
-
-              queue.push({
-                id: file.id,
-                depth: 3,
-                category: folder.category,
-                productCode: folder.productCode,
-                mediaSection: section,
-              });
-
-              continue;
-            }
-
-            /*
-             * Do not scan deeper than section level.
-             */
-            continue;
-          }
-
-          /*
-           * Files are accepted only inside:
-           * product -> فيديوهات / تصاميم / 3D
-           */
-          if (
-            folder.depth !== 3 ||
-            !folder.mediaSection ||
-            !folder.productCode
-          ) {
+          if (!productCode) {
+            console.warn(
+              `[media] Product code not found: ${file.name}`
+            );
             continue;
           }
 
           const extension = file.name.includes(".")
-            ? (
-                file.name.split(".").pop() ?? ""
-              ).toLowerCase()
+            ? (file.name.split(".").pop() ?? "").toLowerCase()
             : "";
 
           let fileType:
@@ -350,10 +282,7 @@ export default async function handler(
             | "design"
             | "3d";
 
-          if (folder.mediaSection === "3D") {
-            /*
-             * Only GLB / GLTF models.
-             */
+          if (mediaFolder.mediaSection === "3D") {
             if (
               extension !== "glb" &&
               extension !== "gltf"
@@ -363,24 +292,16 @@ export default async function handler(
 
             fileType = "3d";
           } else if (
-            folder.mediaSection === "فيديوهات"
+            mediaFolder.mediaSection === "فيديوهات"
           ) {
             fileType = "video";
           } else {
             fileType = "design";
           }
 
-          const isPdf =
-            extension === "pdf" ||
-            file.mimeType === "application/pdf";
-
           const thumbnailUrl =
             `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
 
-          /*
-           * Proxy Drive through our own API.
-           * This avoids depending on public Drive sharing.
-           */
           const previewUrl =
             `/api/file?id=${file.id}`;
 
@@ -400,41 +321,24 @@ export default async function handler(
           files.push({
             id: file.id,
             name: file.name,
-
             extension,
             mimeType: file.mimeType ?? "",
-
             size: formatSize(file.size),
-
-            modifiedTime:
-              file.modifiedTime ?? "",
-
-            productCode:
-              folder.productCode,
-
-            category:
-              folder.category || "عام",
-
-            mediaSection:
-              folder.mediaSection,
-
+            modifiedTime: file.modifiedTime ?? "",
+            productCode,
+            category: mediaFolder.category || "عام",
+            mediaSection: mediaFolder.mediaSection,
             fileType,
-
-            folderName:
-              folder.mediaSection,
-
+            folderName: mediaFolder.mediaSection,
             thumbnailUrl,
             previewUrl,
             downloadUrl,
             modelUrl,
-
-            isPdf,
           });
         }
 
         pageToken =
-          page.data.nextPageToken ??
-          undefined;
+          page.data.nextPageToken ?? undefined;
       } while (pageToken);
     }
 
