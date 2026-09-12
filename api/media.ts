@@ -13,9 +13,9 @@
  *     ├── تصاميم
  *     └── 3D
  *
- * Product code is extracted from the file name.
+ * Any file whose name starts with RE is accepted.
  *
- * Examples:
+ * Known product code examples:
  * RE-2211.jpg             -> RE-2211
  * RE-2211-1.jpg           -> RE-2211
  * RE-2211-video-01.mp4    -> RE-2211
@@ -27,6 +27,11 @@
  * RE-16-004-copy.jpg      -> RE-16-004
  *
  * RE0003-BLUE.jpg         -> RE-0003
+ *
+ * Fallback examples:
+ * RE-new-design.jpg       -> RE-new-design
+ * RE_test.jpg             -> RE_test
+ * RE أي اسم.jpg           -> RE أي اسم
  */
 
 import { google } from "googleapis";
@@ -122,15 +127,24 @@ function sectionOf(name: string): MediaSection | null {
 /**
  * Extract and normalize Rebune product codes.
  *
- * Important:
- * RE-2211-1.jpg       -> RE-2211
- * RE-2223-4-5.jpg     -> RE-2223
- * RE-2-182 black.mov  -> RE-2-182
- * RE-10-041.jpg       -> RE-10-041
- * RE0003-BLUE.jpg     -> RE-0003
+ * Rules:
+ * 1. The file must start with RE.
+ * 2. Known Rebune code formats are normalized.
+ * 3. If the name starts with RE but doesn't match a known format,
+ *    the filename without its extension is used as the product code.
  */
 function extractProductCode(fileName: string): string {
-  const name = fileName.trim().toUpperCase();
+  const originalName = fileName.trim();
+
+  // Remove the final file extension only.
+  const baseName = originalName.replace(/\.[^/.]+$/, "").trim();
+
+  // Reject files that do not begin with RE.
+  if (!/^RE/i.test(baseName)) {
+    return "";
+  }
+
+  const name = baseName.toUpperCase();
 
   /*
    * Family style:
@@ -153,6 +167,7 @@ function extractProductCode(fileName: string): string {
    * RE2211
    * RE-2211-1
    * RE-2223-4-5
+   * RE0003
    */
   const standardMatch = name.match(
     /^RE[-_]?(\d{4})(?=[^0-9]|$)/
@@ -175,7 +190,16 @@ function extractProductCode(fileName: string): string {
     return `RE-${shortMatch[1]}`;
   }
 
-  return "";
+  /*
+   * Fallback:
+   * Accept any file beginning with RE.
+   *
+   * Examples:
+   * RE-new-design.jpg -> RE-new-design
+   * RE_test.png       -> RE_test
+   * RE جديد.jpg       -> RE جديد
+   */
+  return baseName;
 }
 
 function formatSize(bytes?: string | null): string {
@@ -184,6 +208,7 @@ function formatSize(bytes?: string | null): string {
   if (!Number.isFinite(b) || b <= 0) return "—";
   if (b < 1024) return `${b} B`;
   if (b < 1024 ** 2) return `${Math.round(b / 1024)} KB`;
+
   if (b < 1024 ** 3) {
     return `${(b / 1024 ** 2).toFixed(1)} MB`;
   }
@@ -356,9 +381,12 @@ export default async function handler(
           const productCode =
             extractProductCode(file.name);
 
+          /*
+           * Ignore only files that do NOT begin with RE.
+           */
           if (!productCode) {
             console.warn(
-              `[media] Product code not found: ${file.name}`
+              `[media] Ignored file not starting with RE: ${file.name}`
             );
 
             continue;
@@ -375,11 +403,18 @@ export default async function handler(
             | "design"
             | "3d";
 
+          /*
+           * 3D accepts GLB / GLTF only.
+           */
           if (mediaFolder.mediaSection === "3D") {
             if (
               extension !== "glb" &&
               extension !== "gltf"
             ) {
+              console.warn(
+                `[media] Ignored unsupported 3D file: ${file.name}`
+              );
+
               continue;
             }
 
