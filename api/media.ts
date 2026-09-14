@@ -1,27 +1,39 @@
 /**
- * /api/media — Vercel Serverless Function (Server-side only)
- * -----------------------------------------------------------
- * يقرأ مكتبة Google Drive منظمة بهذا الشكل:
+ * /api/media — Vercel Serverless Function
  *
- *   rebune-media-library
- *   ├── تجميلي
- *   │   └── RE-2211
- *   │       ├── فيديوهات
- *   │       └── تصاميم
- *   └── منزلي
- *       └── RE-1-102
- *           ├── فيديوهات
- *           └── تصاميم
+ * Google Drive structure:
  *
- * القواعد:
- *  - يُهمل تمامًا أي مجلد باسم «صور» (أو مرادفاته) وكل ما بداخله.
- *  - تُعاد فقط الملفات داخل مجلدات «فيديوهات» أو «تصاميم».
- *  - JPG/PNG/PDF داخل «تصاميم» تُعدّ تصميمًا (Design) وليست صورة منتج.
- *  - productCode يؤخذ من اسم مجلد المنتج مباشرة (لا استخراج من اسم الملف).
+ * rebune-media-library
+ * ├── تجميلي
+ * │   ├── فيديوهات
+ * │   ├── تصاميم
+ * │   └── 3D
+ * └── منزلي
+ *     ├── فيديوهات
+ *     ├── تصاميم
+ *     └── 3D
  *
- * الأمان: GOOGLE_SERVICE_ACCOUNT_EMAIL و GOOGLE_PRIVATE_KEY يُقرأان هنا فقط
- * على الخادم ولا يصلان أبدًا إلى المتصفح.
+ * Any file whose name starts with RE is accepted.
+ *
+ * Known product code examples:
+ * RE-2211.jpg             -> RE-2211
+ * RE-2211-1.jpg           -> RE-2211
+ * RE-2211-video-01.mp4    -> RE-2211
+ * RE-2223-4-5.jpg         -> RE-2223
+ *
+ * RE-1-102.jpg            -> RE-1-102
+ * RE-2-182 أسود.MOV       -> RE-2-182
+ * RE-10-041.jpg           -> RE-10-041
+ * RE-16-004-copy.jpg      -> RE-16-004
+ *
+ * RE0003-BLUE.jpg         -> RE-0003
+ *
+ * Fallback examples:
+ * RE-new-design.jpg       -> RE-new-design
+ * RE_test.jpg             -> RE_test
+ * RE أي اسم.jpg           -> RE أي اسم
  */
+
 import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
@@ -30,215 +42,452 @@ const FOLDER_MIME = "application/vnd.google-apps.folder";
 const FIELDS =
   "nextPageToken, files(id, name, mimeType, size, modifiedTime, parents, thumbnailLink, webViewLink, webContentLink)";
 
-/* ------------------------------------------------------------------ */
-/*  تسمية المجلدات                                                     */
-/* ------------------------------------------------------------------ */
-
 const CATEGORY_MAP: Record<string, string> = {
   "تجميلي": "تجميلي",
   "تجميل": "تجميلي",
   beauty: "تجميلي",
+
   "منزلي": "منزلي",
   home: "منزلي",
 };
 
-const VIDEOS_NAMES = new Set(["فيديوهات", "فيديو", "videos", "video"]);
-const DESIGNS_NAMES = new Set(["تصاميم", "تصميم", "designs", "design"]);
-
-/** مجلدات تُهمل نهائيًا — صور المنتجات موجودة في rebune.com */
-const IGNORED_FOLDER_NAMES = new Set([
-  "صور",
-  "صورة",
-  "صور المنتج",
-  "صور منتجات",
-  "images",
-  "image",
-  "photos",
-  "photo",
-  "product images",
-  "product photos",
+const VIDEO_FOLDER_NAMES = new Set([
+  "فيديوهات",
+  "فيديو",
+  "videos",
+  "video",
 ]);
 
-function categoryOf(name: string): string {
-  const t = name.trim();
-  return CATEGORY_MAP[t] ?? CATEGORY_MAP[t.toLowerCase()] ?? t;
+const DESIGN_FOLDER_NAMES = new Set([
+  "تصاميم",
+  "تصميم",
+  "designs",
+  "design",
+]);
+
+const MODEL_FOLDER_NAMES = new Set([
+  "3d",
+  "نماذج ثلاثية الأبعاد",
+  "ثلاثي الأبعاد",
+  "models",
+  "model",
+]);
+
+type MediaSection = "فيديوهات" | "تصاميم" | "3D";
+
+interface CategoryFolder {
+  id: string;
+  category: string;
 }
 
-/** يعيد القسم الموحد («فيديوهات» أو «تصاميم») أو null لمجلد غير معروف */
-function sectionOf(name: string): "فيديوهات" | "تصاميم" | null {
-  const t = name.trim();
-  const l = t.toLowerCase();
-  if (VIDEOS_NAMES.has(t) || VIDEOS_NAMES.has(l)) return "فيديوهات";
-  if (DESIGNS_NAMES.has(t) || DESIGNS_NAMES.has(l)) return "تصاميم";
+interface MediaFolder {
+  id: string;
+  category: string;
+  mediaSection: MediaSection;
+}
+
+function categoryOf(name: string): string {
+  const value = name.trim();
+
+  return (
+    CATEGORY_MAP[value] ??
+    CATEGORY_MAP[value.toLowerCase()] ??
+    value
+  );
+}
+
+function sectionOf(name: string): MediaSection | null {
+  const value = name.trim();
+  const lower = value.toLowerCase();
+
+  if (
+    VIDEO_FOLDER_NAMES.has(value) ||
+    VIDEO_FOLDER_NAMES.has(lower)
+  ) {
+    return "فيديوهات";
+  }
+
+  if (
+    DESIGN_FOLDER_NAMES.has(value) ||
+    DESIGN_FOLDER_NAMES.has(lower)
+  ) {
+    return "تصاميم";
+  }
+
+  if (
+    MODEL_FOLDER_NAMES.has(value) ||
+    MODEL_FOLDER_NAMES.has(lower)
+  ) {
+    return "3D";
+  }
+
   return null;
 }
 
-function isIgnoredFolder(name: string): boolean {
-  const t = name.trim();
-  return IGNORED_FOLDER_NAMES.has(t) || IGNORED_FOLDER_NAMES.has(t.toLowerCase());
-}
+/**
+ * Extract and normalize Rebune product codes.
+ *
+ * Rules:
+ * 1. The file must start with RE.
+ * 2. Known Rebune code formats are normalized.
+ * 3. If the name starts with RE but doesn't match a known format,
+ *    the filename without its extension is used as the product code.
+ */
+function extractProductCode(fileName: string): string {
+  const originalName = fileName.trim();
 
-/* ------------------------------------------------------------------ */
-/*  أدوات مساعدة                                                       */
-/* ------------------------------------------------------------------ */
+  // Remove the final file extension only.
+  const baseName = originalName.replace(/\.[^/.]+$/, "").trim();
+
+  // Reject files that do not begin with RE.
+  if (!/^RE/i.test(baseName)) {
+    return "";
+  }
+
+  const name = baseName.toUpperCase();
+
+  /*
+   * Family style:
+   * RE-1-102
+   * RE-2-182
+   * RE-10-041
+   * RE-16-004
+   */
+  const familyMatch = name.match(
+    /^RE[-_]?(\d{1,2})[-_](\d{3})(?=[^0-9]|$)/
+  );
+
+  if (familyMatch) {
+    return `RE-${familyMatch[1]}-${familyMatch[2]}`;
+  }
+
+  /*
+   * Standard four-digit style:
+   * RE-2211
+   * RE2211
+   * RE-2211-1
+   * RE-2223-4-5
+   * RE0003
+   */
+  const standardMatch = name.match(
+    /^RE[-_]?(\d{4})(?=[^0-9]|$)/
+  );
+
+  if (standardMatch) {
+    return `RE-${standardMatch[1]}`;
+  }
+
+  /*
+   * Short style:
+   * RE-16
+   * RE16
+   */
+  const shortMatch = name.match(
+    /^RE[-_]?(\d{1,3})(?=[^0-9]|$)/
+  );
+
+  if (shortMatch) {
+    return `RE-${shortMatch[1]}`;
+  }
+
+  /*
+   * Fallback:
+   * Accept any file beginning with RE.
+   *
+   * Examples:
+   * RE-new-design.jpg -> RE-new-design
+   * RE_test.png       -> RE_test
+   * RE جديد.jpg       -> RE جديد
+   */
+  return baseName;
+}
 
 function formatSize(bytes?: string | null): string {
   const b = Number(bytes ?? 0);
+
   if (!Number.isFinite(b) || b <= 0) return "—";
   if (b < 1024) return `${b} B`;
   if (b < 1024 ** 2) return `${Math.round(b / 1024)} KB`;
-  if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)} MB`;
+
+  if (b < 1024 ** 3) {
+    return `${(b / 1024 ** 2).toFixed(1)} MB`;
+  }
+
   return `${(b / 1024 ** 3).toFixed(2)} GB`;
 }
 
-/** حماية معرّف المجلد داخل استعلام Drive */
 function esc(id: string): string {
-  return id.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return id
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'");
 }
 
-/** عنصر في طابور الاجتياز — يحمل موقع المجلد داخل شجرة المكتبة */
-interface QueueItem {
-  id: string;
-  /** 0 = الجذر · 1 = تصنيف · 2 = منتج · 3 = قسم (فيديوهات/تصاميم) */
-  depth: number;
-  category: string;
-  productCode: string;
-  mediaSection: "فيديوهات" | "تصاميم" | null;
-}
-
-/* ------------------------------------------------------------------ */
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
-    return res.status(405).json({ source: "error", error: "method_not_allowed" });
+
+    return res.status(405).json({
+      source: "error",
+      error: "method_not_allowed",
+    });
   }
 
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const rawKey = process.env.GOOGLE_PRIVATE_KEY;
-  const rootId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+  const email =
+    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+
+  const rawKey =
+    process.env.GOOGLE_PRIVATE_KEY;
+
+  const rootId =
+    process.env.GOOGLE_DRIVE_FOLDER_ID;
 
   if (!email || !rawKey || !rootId) {
-    // لا نكشف أي تفاصيل عن المتغيرات — رسالة عامة فقط
-    return res.status(500).json({ source: "error", error: "missing_credentials" });
+    return res.status(500).json({
+      source: "error",
+      error: "missing_credentials",
+    });
   }
 
   try {
     const auth = new google.auth.JWT({
       email,
       key: rawKey.replace(/\\n/g, "\n"),
-      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+      scopes: [
+        "https://www.googleapis.com/auth/drive.readonly",
+      ],
     });
-    const drive = google.drive({ version: "v3", auth });
 
-    // اجتياز متكرر (BFS) للشجرة: تصنيف ← منتج ← قسم ← ملف
-    const queue: QueueItem[] = [
-      { id: rootId, depth: 0, category: "", productCode: "", mediaSection: null },
-    ];
-    const visited = new Set<string>([rootId]);
-    const files: Record<string, unknown>[] = [];
+    const drive = google.drive({
+      version: "v3",
+      auth,
+    });
 
-    while (queue.length) {
-      const folder = queue.shift()!;
-      let pageToken: string | undefined = undefined;
+    /*
+     * STEP 1:
+     * rebune-media-library
+     * ├── تجميلي
+     * └── منزلي
+     */
+    const categoryFolders: CategoryFolder[] = [];
+
+    let categoryPageToken: string | undefined;
+
+    do {
+      const page: any = await drive.files.list({
+        q: `'${esc(
+          rootId
+        )}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+
+        fields: FIELDS,
+        pageSize: 1000,
+        pageToken: categoryPageToken,
+
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+
+        orderBy: "name",
+      });
+
+      for (const folder of page.data.files ?? []) {
+        if (!folder.id || !folder.name) continue;
+
+        categoryFolders.push({
+          id: folder.id,
+          category: categoryOf(folder.name),
+        });
+      }
+
+      categoryPageToken =
+        page.data.nextPageToken ?? undefined;
+    } while (categoryPageToken);
+
+    /*
+     * STEP 2:
+     * Find:
+     * فيديوهات / تصاميم / 3D
+     */
+    const mediaFolders: MediaFolder[] = [];
+
+    for (const categoryFolder of categoryFolders) {
+      let pageToken: string | undefined;
 
       do {
         const page: any = await drive.files.list({
-          q: `'${esc(folder.id)}' in parents and trashed = false`,
+          q: `'${esc(
+            categoryFolder.id
+          )}' in parents and trashed = false and mimeType = '${FOLDER_MIME}'`,
+
           fields: FIELDS,
           pageSize: 1000,
           pageToken,
+
           supportsAllDrives: true,
           includeItemsFromAllDrives: true,
-          orderBy: "folder, name",
+
+          orderBy: "name",
         });
 
-        for (const f of page.data.files ?? []) {
-          if (!f.id || !f.name) continue;
+        for (const folder of page.data.files ?? []) {
+          if (!folder.id || !folder.name) continue;
 
-          if (f.mimeType === FOLDER_MIME) {
-            if (visited.has(f.id)) continue;
-            // تجاهل تام لمجلدات الصور وكل ما بداخلها
-            if (isIgnoredFolder(f.name)) {
-              visited.add(f.id);
-              continue;
-            }
+          const mediaSection =
+            sectionOf(folder.name);
 
-            if (folder.depth === 0) {
-              // مستوى التصنيف (تجميلي / منزلي …)
-              visited.add(f.id);
-              queue.push({
-                id: f.id,
-                depth: 1,
-                category: categoryOf(f.name),
-                productCode: "",
-                mediaSection: null,
-              });
-            } else if (folder.depth === 1) {
-              // مستوى المنتج — رقم الموديل من اسم المجلد مباشرة
-              visited.add(f.id);
-              queue.push({
-                id: f.id,
-                depth: 2,
-                category: folder.category,
-                productCode: f.name.trim(),
-                mediaSection: null,
-              });
-            } else if (folder.depth === 2) {
-              // مستوى القسم — نقبل «فيديوهات» و«تصاميم» فقط
-              const section = sectionOf(f.name);
-              if (!section) {
-                visited.add(f.id);
-                continue;
-              }
-              visited.add(f.id);
-              queue.push({
-                id: f.id,
-                depth: 3,
-                category: folder.category,
-                productCode: folder.productCode,
-                mediaSection: section,
-              });
-            }
-            // أي عمق أكبر — لا نلتقط منه ملفات
-            continue;
-          }
+          if (!mediaSection) continue;
 
-          // ملف — نقبله فقط داخل قسم «فيديوهات» أو «تصاميم»
-          if (folder.depth !== 3 || !folder.mediaSection || !folder.productCode) continue;
-
-          const extension = f.name.includes(".") ? (f.name.split(".").pop() ?? "").toLowerCase() : "";
-          const fileType: "video" | "design" = folder.mediaSection === "فيديوهات" ? "video" : "design";
-          const isPdf = extension === "pdf" || f.mimeType === "application/pdf";
-
-          const thumbnailUrl = `https://drive.google.com/thumbnail?id=${f.id}&sz=w1000`;
-          const previewUrl =
-            fileType === "video" || isPdf
-              ? `https://drive.google.com/file/d/${f.id}/preview`
-              : `https://drive.google.com/thumbnail?id=${f.id}&sz=w1600`;
-
-          files.push({
-            id: f.id,
-            name: f.name,
-            extension,
-            mimeType: f.mimeType ?? "",
-            size: formatSize(f.size),
-            modifiedTime: f.modifiedTime ?? "",
-            productCode: folder.productCode,
-            category: folder.category || "عام",
-            mediaSection: folder.mediaSection,
-            fileType,
-            thumbnailUrl,
-            previewUrl,
-            downloadUrl: f.webContentLink ?? `https://drive.google.com/uc?export=download&id=${f.id}`,
+          mediaFolders.push({
+            id: folder.id,
+            category: categoryFolder.category,
+            mediaSection,
           });
         }
 
-        pageToken = page.data.nextPageToken ?? undefined;
+        pageToken =
+          page.data.nextPageToken ?? undefined;
       } while (pageToken);
     }
 
-    res.setHeader("Cache-Control", "s-maxage=120, stale-while-revalidate=600");
+    /*
+     * STEP 3:
+     * Read files from each media folder.
+     */
+    const files: Record<string, unknown>[] = [];
+
+    for (const mediaFolder of mediaFolders) {
+      let pageToken: string | undefined;
+
+      do {
+        const page: any = await drive.files.list({
+          q: `'${esc(
+            mediaFolder.id
+          )}' in parents and trashed = false and mimeType != '${FOLDER_MIME}'`,
+
+          fields: FIELDS,
+          pageSize: 1000,
+          pageToken,
+
+          supportsAllDrives: true,
+          includeItemsFromAllDrives: true,
+
+          orderBy: "name",
+        });
+
+        for (const file of page.data.files ?? []) {
+          if (!file.id || !file.name) continue;
+
+          const productCode =
+            extractProductCode(file.name);
+
+          /*
+           * Ignore only files that do NOT begin with RE.
+           */
+          if (!productCode) {
+            console.warn(
+              `[media] Ignored file not starting with RE: ${file.name}`
+            );
+
+            continue;
+          }
+
+          const extension = file.name.includes(".")
+            ? (
+                file.name.split(".").pop() ?? ""
+              ).toLowerCase()
+            : "";
+
+          let fileType:
+            | "video"
+            | "design"
+            | "3d";
+
+          /*
+           * 3D accepts GLB / GLTF only.
+           */
+          if (mediaFolder.mediaSection === "3D") {
+            if (
+              extension !== "glb" &&
+              extension !== "gltf"
+            ) {
+              console.warn(
+                `[media] Ignored unsupported 3D file: ${file.name}`
+              );
+
+              continue;
+            }
+
+            fileType = "3d";
+          } else if (
+            mediaFolder.mediaSection === "فيديوهات"
+          ) {
+            fileType = "video";
+          } else {
+            fileType = "design";
+          }
+
+          const thumbnailUrl =
+            `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
+
+          const previewUrl =
+            `/api/file?id=${file.id}`;
+
+          const downloadUrl =
+            `/api/file?id=${file.id}`;
+
+          const version =
+            encodeURIComponent(
+              file.modifiedTime ?? ""
+            );
+
+          const modelUrl =
+            fileType === "3d"
+              ? `/api/file?id=${file.id}&v=${version}`
+              : undefined;
+
+          files.push({
+            id: file.id,
+            name: file.name,
+
+            extension,
+            mimeType: file.mimeType ?? "",
+
+            size: formatSize(file.size),
+
+            modifiedTime:
+              file.modifiedTime ?? "",
+
+            productCode,
+
+            category:
+              mediaFolder.category || "عام",
+
+            mediaSection:
+              mediaFolder.mediaSection,
+
+            fileType,
+
+            folderName:
+              mediaFolder.mediaSection,
+
+            thumbnailUrl,
+            previewUrl,
+            downloadUrl,
+            modelUrl,
+          });
+        }
+
+        pageToken =
+          page.data.nextPageToken ?? undefined;
+      } while (pageToken);
+    }
+
+    res.setHeader(
+      "Cache-Control",
+      "s-maxage=120, stale-while-revalidate=600"
+    );
+
     return res.status(200).json({
       source: "drive",
       updatedAt: new Date().toISOString(),
@@ -246,6 +495,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (err) {
     console.error("[/api/media]", err);
-    return res.status(500).json({ source: "error", error: "drive_fetch_failed" });
+
+    return res.status(500).json({
+      source: "error",
+      error: "drive_fetch_failed",
+    });
   }
 }

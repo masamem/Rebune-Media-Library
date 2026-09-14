@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { filterFiles, groupByProduct, type MediaFile, type Section } from "./data/media";
-import { fetchMediaLibrary } from "./lib/drive";
+import {
+  MEDIA_FILES,
+  filterFiles,
+  groupByProduct,
+  type MediaFile,
+  type Section,
+} from "./data/media";
+import { fetchDriveMedia, toMediaFile } from "./lib/drive";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import SectionCards from "./components/SectionCards";
@@ -9,28 +15,33 @@ import FileGrid from "./components/FileGrid";
 import PreviewModal from "./components/PreviewModal";
 import ProductView from "./components/ProductView";
 import Footer from "./components/Footer";
+import MobileBottomNav from "./components/MobileBottomNav";
 import { SkeletonChips, SkeletonGrid, LibraryError } from "./components/States";
 import { ToastProvider } from "./components/Toast";
 import { Reveal } from "./components/ui";
 
 type Status = "loading" | "ready" | "error";
+type Source = "drive" | "demo";
 
 export default function App() {
   const [query, setQuery] = useState("");
-  /** الفلتر الموحد: "all" | "video" | "design" | اسم تصنيف */
-  const [filter, setFilter] = useState<string>("all");
+  const [category, setCategory] = useState<string>("all");
+  const [fileType, setFileType] = useState<string>("all");
   const [section, setSection] = useState<Section>("all");
   const [productCode, setProductCode] = useState<string | null>(null);
   const [preview, setPreview] = useState<MediaFile | null>(null);
 
-  /* ---- جلب الملفات من /api/media (Google Drive) — المصدر الوحيد ---- */
+  /* ---- جلب الملفات من /api/media (Google Drive) مع fallback تجريبي ---- */
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [status, setStatus] = useState<Status>("loading");
+  const [source, setSource] = useState<Source>("drive");
 
   const load = useCallback(async () => {
     setStatus("loading");
     try {
-      setFiles(await fetchMediaLibrary());
+      const items = await fetchDriveMedia();
+      setFiles(items.map(toMediaFile));
+      setSource("drive");
       setStatus("ready");
     } catch {
       setStatus("error");
@@ -41,20 +52,34 @@ export default function App() {
     void load();
   }, [load]);
 
+  /** النسخة التجريبية — تُعرض فقط عند فشل الاتصال وبالضغط الصريح من المستخدم */
+  const useDemoFallback = useCallback(() => {
+    setFiles(MEDIA_FILES);
+    setSource("demo");
+    setStatus("ready");
+  }, []);
+
+  /* أحدث الملفات أولًا */
+  const sorted = useMemo(
+    () => [...files].sort((a, b) => b.date.localeCompare(a.date)),
+    [files],
+  );
+
   const filtered = useMemo(
-    () => filterFiles(files, { section, filter, query }),
-    [files, section, filter, query],
+    () => filterFiles(sorted, { section, category, fileType, query }),
+    [sorted, section, category, fileType, query],
   );
 
   /* ملفات القسم النشط فقط — لجعل عدّادات الفلاتر دقيقة */
   const sectionFiles = useMemo(
-    () => filterFiles(files, { section, filter: "all", query: "" }),
-    [files, section],
+    () => filterFiles(sorted, { section, category: "all", fileType: "all", query: "" }),
+    [sorted, section],
   );
 
-  const products = useMemo(() => groupByProduct(files), [files]);
+  const products = useMemo(() => groupByProduct(sorted), [sorted]);
 
-  const hasFilters = query.trim() !== "" || filter !== "all" || section !== "all";
+  const hasFilters =
+    query.trim() !== "" || category !== "all" || fileType !== "all" || section !== "all";
 
   const isLoading = status === "loading";
 
@@ -67,7 +92,8 @@ export default function App() {
   const handleNavigate = (s: Section) => {
     setProductCode(null);
     setQuery("");
-    setFilter("all");
+    setCategory("all");
+    setFileType("all");
     setSection(s);
     if (s === "all") window.scrollTo({ top: 0, behavior: "smooth" });
     else scrollToLibrary();
@@ -75,7 +101,8 @@ export default function App() {
 
   const handleClearAll = () => {
     setQuery("");
-    setFilter("all");
+    setCategory("all");
+    setFileType("all");
     setSection("all");
   };
 
@@ -88,62 +115,65 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex min-h-dvh flex-col pb-20 md:pb-0">
         <Header section={section} inProductView={!!activeGroup} onNavigate={handleNavigate} />
 
         <main className="flex-1">
           {activeGroup ? (
             <ProductView
               group={activeGroup}
-              files={files}
+              files={sorted}
               onBack={() => setProductCode(null)}
               onPreview={setPreview}
               onOpenProduct={openProduct}
             />
-          ) : status === "error" ? (
-            <LibraryError onRetry={load} />
           ) : (
             <>
-              <Hero query={query} onQuery={setQuery} files={files} loading={isLoading} />
+              <Hero query={query} onQuery={setQuery} files={sorted} loading={isLoading} />
 
-              {/* الفلاتر */}
-              <div className="mx-auto mt-8 max-w-6xl px-4 md:px-6">
+              {/* الفلاتر — Skeleton أثناء الجلب من Drive */}
+              <div className="mx-auto mt-4 max-w-6xl px-4 md:mt-8 md:px-6">
                 <Reveal>
-                  {isLoading ? (
-                    <SkeletonChips />
-                  ) : (
-                    <div className="rounded-[1.15rem] border border-cream-300/70 bg-cream-50/70 p-4 shadow-card md:p-5">
-                      <FilterChips files={sectionFiles} filter={filter} onFilter={setFilter} />
-                    </div>
-                  )}
+                  <div className="rounded-[1rem] border border-cream-300/70 bg-cream-50/80 p-3 shadow-card md:rounded-[1.15rem] md:p-5">
+                    {status === "ready" ? (
+                      <FilterChips
+                        files={sectionFiles}
+                        category={category}
+                        fileType={fileType}
+                        onCategory={setCategory}
+                        onFileType={setFileType}
+                      />
+                    ) : (
+                      <SkeletonChips />
+                    )}
+                  </div>
                 </Reveal>
               </div>
 
-              <div className="mt-10">
+              <div className="mt-6 md:mt-10">
                 <SectionCards
                   section={section}
+                  files={sorted}
+                  loading={isLoading}
                   onSelect={(s) => {
                     const next = s === section ? "all" : s;
                     setSection(next);
                     if (next !== "all") scrollToLibrary();
                   }}
-                  files={files}
-                  loading={isLoading}
                 />
               </div>
 
               <div className="mt-4">
-                {isLoading ? (
-                  <div className="mx-auto max-w-6xl px-4 md:px-6">
-                    <SkeletonGrid />
-                  </div>
-                ) : (
+                {status === "loading" && <SkeletonGrid />}
+                {status === "error" && <LibraryError onRetry={() => void load()} onDemo={useDemoFallback} />}
+                {status === "ready" && (
                   <FileGrid
                     files={filtered}
                     section={section}
                     query={query}
                     hasFilters={hasFilters}
                     allProducts={products}
+                    source={source}
                     onClearAll={handleClearAll}
                     onPreview={setPreview}
                     onOpenProduct={openProduct}
@@ -155,6 +185,8 @@ export default function App() {
         </main>
 
         <Footer />
+
+        <MobileBottomNav section={section} inProductView={!!activeGroup} onNavigate={handleNavigate} />
 
         <PreviewModal
           file={preview}

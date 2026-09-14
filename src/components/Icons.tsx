@@ -154,9 +154,13 @@ export const RefreshIcon = (p: P) => (
   </svg>
 );
 
-export const PenIcon = (p: P) => (
+export const Rotate360Icon = (p: P) => (
   <svg {...base(p)}>
-    <path d="m14.5 5 4.5 4.5L8.5 20H4v-4.5L14.5 5Z" />
-    <path d="m12.5 7 4.5 4.5M4 20l1.2-4.5" />
+    <path d="M4.2 9.2A8.3 8.3 0 0 1 19 7.1" />
+    <path d="m19.2 3.8-.2 3.6-3.6-.2" />
+    <path d="M19.8 14.8A8.3 8.3 0 0 1 5 16.9" />
+    <path d="m4.8 20.2.2-3.6 3.6.2" />
+    <path d="M8.2 10.1c.6-.7 2.2-.8 2.8 0 .5.8-.1 1.5-1 1.8.9.2 1.5.8 1.3 1.7-.3 1.1-2.5 1.2-3.3.2" strokeWidth="1.5" />
+    <path d="M13.2 10v4.1M13.2 10h2.2M13.2 12h1.8M13.2 14.1h2.2" strokeWidth="1.5" />
   </svg>
 );
