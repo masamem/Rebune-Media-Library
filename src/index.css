@@ -165,41 +165,25 @@ input[type="search"]::-webkit-search-cancel-button {
   }
 }
 
-/* ---------- Rebune mobile-first review layer ---------- */
-.mobile-bottom-nav { position: fixed; inset-inline: 12px; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 80; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); padding: 7px; border: 1px solid rgb(232 220 200 / .92); border-radius: 20px; background: rgb(254 252 248 / .94); box-shadow: 0 16px 45px -18px rgb(42 32 24 / .45); backdrop-filter: blur(18px); }
-.mobile-bottom-nav button { min-height: 48px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:14px; color:var(--color-ink-500); font-size:10px; font-weight:800; transition:.2s ease; }
-.mobile-bottom-nav button.active { background:var(--color-brand-50); color:var(--color-brand-600); }
-.mobile-bottom-nav button:active { transform:scale(.94); }
-
+/* ---------- mobile-first trial polish ---------- */
 @media (max-width: 767px) {
-  body { background-attachment: scroll; }
-  header > div:first-child { height: 58px; }
-  header nav[aria-label="التنقل الرئيسي"] { display:none; }
-  main > section:first-child > div.mx-auto { padding-top: 22px; padding-bottom: 24px; }
-  main > section:first-child h1 { margin-top: 14px; font-size: 1.75rem; }
-  main > section:first-child p { margin-top: 8px; line-height: 1.8; font-size: 13px; }
-  main > section:first-child form { margin-top: 18px; position: sticky; top: 66px; z-index: 35; }
-  main > section:first-child form input { height: 54px; background: rgb(254 252 248 / .97); box-shadow: 0 8px 25px -16px rgb(42 32 24 / .45); }
-  main > section:first-child dl { margin-top: 18px; padding-top: 14px; }
-  main > section:first-child dl dt { font-size: 1.2rem; }
-  main > section:first-child dl dd { font-size: 10px; }
-  #library { scroll-margin-top: 76px; }
-  #library .grid.grid-cols-1 { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
-  #library article { border-radius: 14px; }
-  #library article > div:last-of-type { padding: 10px; }
-  #library article h3 { font-size: 12px; line-height: 1.25rem; }
-  #library article p { font-size: 10px; }
-  #library article button { min-height: 42px; }
-  #library article .aspect-\[4\/3\] { aspect-ratio: 1 / 1; }
-  section[aria-label="أقسام المكتبة"] > div.grid { display:flex; overflow-x:auto; gap:10px; margin-inline:-16px; padding-inline:16px; padding-bottom:4px; scroll-snap-type:x mandatory; scrollbar-width:none; }
-  section[aria-label="أقسام المكتبة"] > div.grid > * { min-width: 76vw; scroll-snap-align:start; }
-  section[aria-label="أقسام المكتبة"] button { min-height: 138px; padding: 18px; }
-  section[aria-label="أقسام المكتبة"] button > span.relative { gap: 22px; }
-  footer { padding-bottom: 70px; }
-}
+  body {
+    background-attachment: scroll;
+  }
 
-@media (max-width: 390px) {
-  #library .grid.grid-cols-1 { gap: 8px; }
-  #library article > div:last-of-type { padding: 8px; }
-  #library article .lat.text-xs { font-size: 10px; }
+  body::after {
+    opacity: 0.025;
+  }
+
+  #library {
+    scroll-margin-top: 4rem;
+  }
+
+  #library-search {
+    scroll-margin-top: 7rem;
+  }
+
+  .mobile-bottom-nav {
+    padding-bottom: max(0.375rem, env(safe-area-inset-bottom));
+  }
 }

@@ -19,7 +19,7 @@ export default function SectionCards({
   const num = (n: number) => (loading ? "…" : n);
 
   const cardBase =
-    "group relative h-full w-full overflow-hidden rounded-[1.35rem] border p-6 text-start transition-all duration-300 hover:-translate-y-1.5 active:scale-[0.985] md:p-7";
+    "group relative h-full w-[78vw] max-w-[310px] shrink-0 snap-start overflow-hidden rounded-[1.2rem] border p-4 text-start transition-all duration-300 hover:-translate-y-1.5 active:scale-[0.985] md:w-full md:max-w-none md:p-7";
 
   return (
     <section
@@ -27,23 +27,23 @@ export default function SectionCards({
       aria-label="أقسام المكتبة"
     >
       <Reveal>
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="font-display text-xl font-extrabold text-ink-950 md:text-2xl">
+        <div className="mb-3 flex items-end justify-between">
+          <h2 className="font-display text-lg font-extrabold text-ink-950 md:text-2xl">
             تصفّح حسب القسم
           </h2>
 
-          <span className="text-xs font-bold text-ink-400">
+          <span className="hidden text-xs font-bold text-ink-400 md:inline">
             اضغط للفلترة الفورية
           </span>
         </div>
       </Reveal>
 
-      <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+      <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0 md:pb-0">
         {/* فيديوهات المنتجات */}
         <Reveal delay={0} className="h-full">
           <button
             onClick={() => onSelect("videos")}
-            className={`${cardBase} min-h-44 border-transparent bg-ink-950 text-cream-50 shadow-lift ${
+            className={`${cardBase} min-h-36 md:min-h-44 border-transparent bg-ink-950 text-cream-50 shadow-lift ${
               section === "videos"
                 ? "ring-2 ring-brand-500 ring-offset-2 ring-offset-cream-100"
                 : ""
@@ -61,8 +61,8 @@ export default function SectionCards({
               aria-hidden="true"
             />
 
-            <span className="relative flex flex-col items-start gap-8">
-              <span className="grid h-13 w-13 place-items-center rounded-xl bg-brand-500 text-white shadow-card transition-transform duration-300 group-hover:scale-110">
+            <span className="relative flex flex-col items-start gap-5 md:gap-8">
+              <span className="grid h-11 w-11 md:h-13 md:w-13 place-items-center rounded-xl bg-brand-500 text-white shadow-card transition-transform duration-300 group-hover:scale-110">
                 <PlayIcon width={24} height={24} />
               </span>
 
@@ -89,7 +89,7 @@ export default function SectionCards({
         <Reveal delay={90} className="h-full">
           <button
             onClick={() => onSelect("gallery")}
-            className={`${cardBase} min-h-44 border-cream-300 bg-cream-50 text-ink-950 shadow-card hover:border-brand-400/60 hover:shadow-lift ${
+            className={`${cardBase} min-h-36 md:min-h-44 border-cream-300 bg-cream-50 text-ink-950 shadow-card hover:border-brand-400/60 hover:shadow-lift ${
               section === "gallery"
                 ? "ring-2 ring-brand-500 ring-offset-2 ring-offset-cream-100"
                 : ""
@@ -114,8 +114,8 @@ export default function SectionCards({
               <ImageIcon width={130} height={130} strokeWidth={1.2} />
             </span>
 
-            <span className="relative flex flex-col items-start gap-8">
-              <span className="grid h-13 w-13 place-items-center rounded-xl bg-brand-100 text-brand-600 transition-transform duration-300 group-hover:scale-110">
+            <span className="relative flex flex-col items-start gap-5 md:gap-8">
+              <span className="grid h-11 w-11 md:h-13 md:w-13 place-items-center rounded-xl bg-brand-100 text-brand-600 transition-transform duration-300 group-hover:scale-110">
                 <ImageIcon width={24} height={24} />
               </span>
 
@@ -142,7 +142,7 @@ export default function SectionCards({
         <Reveal delay={180} className="h-full">
           <button
             onClick={() => onSelect("latest")}
-            className={`${cardBase} min-h-44 border-brand-500/25 bg-brand-50 text-ink-950 shadow-card hover:border-brand-500/50 hover:shadow-lift ${
+            className={`${cardBase} min-h-36 md:min-h-44 border-brand-500/25 bg-brand-50 text-ink-950 shadow-card hover:border-brand-500/50 hover:shadow-lift ${
               section === "latest"
                 ? "ring-2 ring-brand-500 ring-offset-2 ring-offset-cream-100"
                 : ""
@@ -155,8 +155,8 @@ export default function SectionCards({
               <SparkIcon width={130} height={130} strokeWidth={1.2} />
             </span>
 
-            <span className="relative flex flex-col items-start gap-8">
-              <span className="grid h-13 w-13 place-items-center rounded-xl bg-brand-500 text-white shadow-card transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+            <span className="relative flex flex-col items-start gap-5 md:gap-8">
+              <span className="grid h-11 w-11 md:h-13 md:w-13 place-items-center rounded-xl bg-brand-500 text-white shadow-card transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
                 <SparkIcon width={24} height={24} />
               </span>
 
