@@ -18,6 +18,7 @@ import Footer from "./components/Footer";
 import { SkeletonChips, SkeletonGrid, LibraryError } from "./components/States";
 import { ToastProvider } from "./components/Toast";
 import { Reveal } from "./components/ui";
+import { HomeIcon, PlayIcon, SearchIcon, SparkIcon } from "./components/Icons";
 
 type Status = "loading" | "ready" | "error";
 type Source = "drive" | "demo";
@@ -114,7 +115,7 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex min-h-dvh flex-col pb-18 md:pb-0">
         <Header section={section} inProductView={!!activeGroup} onNavigate={handleNavigate} />
 
         <main className="flex-1">
@@ -190,6 +191,23 @@ export default function App() {
           onClose={() => setPreview(null)}
           onOpenProduct={openProduct}
         />
+
+        {!activeGroup && (
+          <nav className="mobile-bottom-nav md:hidden" aria-label="التنقل السريع">
+            <button onClick={() => handleNavigate("all")} className={section === "all" ? "active" : ""}>
+              <HomeIcon width={20} height={20} /><span>الرئيسية</span>
+            </button>
+            <button onClick={() => handleNavigate("latest")} className={section === "latest" ? "active" : ""}>
+              <SparkIcon width={20} height={20} /><span>الجديد</span>
+            </button>
+            <button onClick={() => handleNavigate("videos")} className={section === "videos" ? "active" : ""}>
+              <PlayIcon width={20} height={20} /><span>فيديو</span>
+            </button>
+            <button onClick={() => { handleNavigate("all"); window.setTimeout(() => document.querySelector<HTMLInputElement>('input[type="search"]')?.focus(), 120); }}>
+              <SearchIcon width={20} height={20} /><span>بحث</span>
+            </button>
+          </nav>
+        )}
       </div>
     </ToastProvider>
   );
