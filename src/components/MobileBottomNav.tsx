@@ -1,5 +1,5 @@
 import type { Section } from "../data/media";
-import { FolderIcon, PlayIcon, SearchIcon, SparkIcon } from "./Icons";
+import { FolderIcon, PlayIcon, Rotate360Icon, SearchIcon, SparkIcon } from "./Icons";
 
 export default function MobileBottomNav({
   section,
@@ -23,11 +23,12 @@ export default function MobileBottomNav({
     { key: "search", label: "البحث", icon: <SearchIcon width={20} height={20} />, action: goSearch },
     { key: "latest" as Section, label: "الجديد", icon: <SparkIcon width={20} height={20} />, action: () => onNavigate("latest") },
     { key: "videos" as Section, label: "فيديو", icon: <PlayIcon width={20} height={20} />, action: () => onNavigate("videos") },
+    { key: "products3d" as Section, label: "3D", icon: <Rotate360Icon width={20} height={20} />, action: () => onNavigate("products3d") },
   ];
 
   return (
     <nav
-      className="mobile-bottom-nav fixed inset-x-3 bottom-3 z-[70] grid grid-cols-4 rounded-[1.25rem] border border-cream-300/80 bg-cream-50/95 p-1.5 shadow-lift backdrop-blur-xl md:hidden"
+      className="mobile-bottom-nav fixed inset-x-3 bottom-3 z-[70] grid grid-cols-5 rounded-[1.25rem] border border-cream-300/80 bg-cream-50/95 p-1.5 shadow-lift backdrop-blur-xl md:hidden"
       aria-label="تنقل الجوال"
     >
       {items.map((item) => {
