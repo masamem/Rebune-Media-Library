@@ -430,16 +430,16 @@ export default async function handler(
           const thumbnailUrl =
             `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
 
-          const previewUrl =
-            `/api/file?id=${file.id}`;
-
-          const downloadUrl =
-            `/api/file?id=${file.id}`;
-
           const version =
             encodeURIComponent(
               file.modifiedTime ?? ""
             );
+
+          const previewUrl =
+            `/api/file?id=${file.id}&v=${version}`;
+
+          const downloadUrl =
+            `/api/file?id=${file.id}&v=${version}`;
 
           const modelUrl =
             fileType === "3d"
