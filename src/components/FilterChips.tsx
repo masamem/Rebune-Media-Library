@@ -16,7 +16,7 @@ function Chip({
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-bold transition-all duration-200 active:scale-95 ${
+      className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[12px] md:px-4 md:text-[13px] font-bold transition-all duration-200 active:scale-95 ${
         active
           ? "border-brand-500 bg-brand-500 text-white shadow-card"
           : "border-cream-300 bg-cream-50 text-ink-700 hover:border-brand-400/70 hover:text-brand-600"
@@ -75,10 +75,10 @@ export default function FilterChips({
   }, [files]);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <span className="w-14 shrink-0 text-[11px] font-extrabold text-ink-400">التصنيف</span>
-        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
+    <div className="space-y-2 md:space-y-3">
+      <div className="flex items-center gap-2 md:gap-3">
+        <span className="hidden w-14 shrink-0 text-[11px] font-extrabold text-ink-400 sm:block">التصنيف</span>
+        <div className="no-scrollbar -mx-4 flex flex-1 gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
           <Chip label="الكل" active={category === "all"} onClick={() => onCategory("all")} />
           {categories.map((c) => (
             <Chip
@@ -92,9 +92,9 @@ export default function FilterChips({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <span className="w-14 shrink-0 text-[11px] font-extrabold text-ink-400">النوع</span>
-        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
+      <div className="flex items-center gap-2 md:gap-3">
+        <span className="hidden w-14 shrink-0 text-[11px] font-extrabold text-ink-400 sm:block">النوع</span>
+        <div className="no-scrollbar -mx-4 flex flex-1 gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
           <Chip label="الكل" active={fileType === "all"} onClick={() => onFileType("all")} />
           {kinds.map((t) => (
             <Chip

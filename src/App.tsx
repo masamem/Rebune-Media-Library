@@ -15,6 +15,7 @@ import FileGrid from "./components/FileGrid";
 import PreviewModal from "./components/PreviewModal";
 import ProductView from "./components/ProductView";
 import Footer from "./components/Footer";
+import MobileBottomNav from "./components/MobileBottomNav";
 import { SkeletonChips, SkeletonGrid, LibraryError } from "./components/States";
 import { ToastProvider } from "./components/Toast";
 import { Reveal } from "./components/ui";
@@ -114,7 +115,7 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex min-h-dvh flex-col pb-20 md:pb-0">
         <Header section={section} inProductView={!!activeGroup} onNavigate={handleNavigate} />
 
         <main className="flex-1">
@@ -131,9 +132,9 @@ export default function App() {
               <Hero query={query} onQuery={setQuery} files={sorted} loading={isLoading} />
 
               {/* الفلاتر — Skeleton أثناء الجلب من Drive */}
-              <div className="mx-auto mt-8 max-w-6xl px-4 md:px-6">
+              <div className="mx-auto mt-4 max-w-6xl px-4 md:mt-8 md:px-6">
                 <Reveal>
-                  <div className="rounded-[1.15rem] border border-cream-300/70 bg-cream-50/70 p-4 shadow-card md:p-5">
+                  <div className="rounded-[1rem] border border-cream-300/70 bg-cream-50/80 p-3 shadow-card md:rounded-[1.15rem] md:p-5">
                     {status === "ready" ? (
                       <FilterChips
                         files={sectionFiles}
@@ -149,7 +150,7 @@ export default function App() {
                 </Reveal>
               </div>
 
-              <div className="mt-10">
+              <div className="mt-6 md:mt-10">
                 <SectionCards
                   section={section}
                   files={sorted}
@@ -184,6 +185,8 @@ export default function App() {
         </main>
 
         <Footer />
+
+        <MobileBottomNav section={section} inProductView={!!activeGroup} onNavigate={handleNavigate} />
 
         <PreviewModal
           file={preview}

@@ -195,12 +195,12 @@ export default function PreviewModal({
               />
             ) : (
               <video
-                key={file.id}
+                key={`${file.id}-${file.previewUrl}`}
                 src={file.previewUrl}
                 poster={file.thumbnail}
                 controls
-                autoPlay
                 playsInline
+                preload="metadata"
                 className="aspect-video w-full bg-black object-contain"
               />
             )
