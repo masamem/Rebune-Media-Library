@@ -35,16 +35,23 @@ export default function App() {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [source, setSource] = useState<Source>("drive");
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
-  const load = useCallback(async () => {
-    setStatus("loading");
+  const load = useCallback(async (silent = false) => {
+    if (silent) setRefreshing(true);
+    else setStatus("loading");
+
     try {
       const items = await fetchDriveMedia();
       setFiles(items.map(toMediaFile));
       setSource("drive");
+      setLastRefreshed(new Date());
       setStatus("ready");
     } catch {
-      setStatus("error");
+      if (!silent) setStatus("error");
+    } finally {
+      if (silent) setRefreshing(false);
     }
   }, []);
 
@@ -177,6 +184,9 @@ export default function App() {
                     onClearAll={handleClearAll}
                     onPreview={setPreview}
                     onOpenProduct={openProduct}
+                    onRefresh={() => void load(true)}
+                    refreshing={refreshing}
+                    lastRefreshed={lastRefreshed}
                   />
                 )}
               </div>

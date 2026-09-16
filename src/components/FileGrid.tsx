@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { SECTION_LABEL, type MediaFile, type ProductGroup, type Section } from "../data/media";
 import FileCard from "./FileCard";
 import { CountPill, Reveal } from "./ui";
-import { ForwardIcon, Rotate360Icon, SearchOffIcon, XIcon } from "./Icons";
+import { ForwardIcon, RefreshIcon, Rotate360Icon, SearchOffIcon, XIcon } from "./Icons";
 
 
 function ProductThumb({ product }: { product: ProductGroup }) {
@@ -80,6 +80,9 @@ export default function FileGrid({
   onClearAll,
   onPreview,
   onOpenProduct,
+  onRefresh,
+  refreshing,
+  lastRefreshed,
 }: {
   files: MediaFile[];
   section: Section;
@@ -90,6 +93,9 @@ export default function FileGrid({
   onClearAll: () => void;
   onPreview: (f: MediaFile) => void;
   onOpenProduct: (code: string) => void;
+  onRefresh: () => void;
+  refreshing: boolean;
+  lastRefreshed: Date | null;
 }) {
   const [productsOpen, setProductsOpen] = useState(false);
   const visibleProducts = productsOpen ? allProducts : allProducts.slice(0, 6);
@@ -146,17 +152,47 @@ export default function FileGrid({
         <div className="mb-5 flex flex-wrap items-center gap-3">
           <h2 className="font-display text-xl font-extrabold text-ink-950 md:text-2xl">{title}</h2>
           <CountPill n={files.length} />
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold ${
-              source === "drive"
-                ? "bg-emerald-500/10 text-emerald-700"
-                : "bg-amber-500/15 text-amber-700"
-            }`}
-            title={source === "drive" ? "الملفات مقروءة مباشرة من Google Drive" : "بيانات تجريبية محلية"}
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            {source === "drive" ? "متزامن مع Google Drive" : "نسخة تجريبية"}
-          </span>
+          {source === "drive" ? (
+            <div
+              dir="ltr"
+              className="lat inline-flex items-center gap-2 rounded-lg border border-cream-300/80 bg-ink-950 px-3 py-1.5 text-[11px] font-bold text-cream-50 shadow-card"
+              title="الملفات مقروءة مباشرة من Google Drive"
+            >
+              <span className="text-sky-300">Live from Google Drive</span>
+              <span className="text-ink-500">•</span>
+              <button
+                type="button"
+                onClick={onRefresh}
+                disabled={refreshing}
+                className="inline-flex items-center gap-1.5 text-orange-400 transition-colors hover:text-orange-300 disabled:cursor-wait disabled:opacity-60"
+                aria-label="Refresh media library"
+                title="Refresh media library from Google Drive"
+              >
+                <RefreshIcon
+                  width={13}
+                  height={13}
+                  className={refreshing ? "animate-spin" : ""}
+                />
+                {refreshing ? "Refreshing…" : "Refresh"}
+              </button>
+              {lastRefreshed && (
+                <span className="text-ink-400">
+                  {lastRefreshed.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              )}
+            </div>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-extrabold text-amber-700"
+              title="بيانات تجريبية محلية"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+              نسخة تجريبية
+            </span>
+          )}
           {hasFilters && (
             <button
               onClick={onClearAll}
