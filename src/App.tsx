@@ -1,3 +1,5 @@
+import { withLocalProducts } from "./data/localProducts";
+import { getProductPage, normalizeProductCode } from "./data/productPages";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MEDIA_FILES,
@@ -8,7 +10,6 @@ import {
 } from "./data/media";
 import { fetchDriveMedia, toMediaFile } from "./lib/drive";
 import Header from "./components/Header";
-import Hero from "./components/Hero";
 import SectionCards from "./components/SectionCards";
 import FilterChips from "./components/FilterChips";
 import FileGrid from "./components/FileGrid";
@@ -28,7 +29,7 @@ export default function App() {
   const [category, setCategory] = useState<string>("all");
   const [fileType, setFileType] = useState<string>("all");
   const [section, setSection] = useState<Section>("all");
-  const [productCode, setProductCode] = useState<string | null>(null);
+  const [productCode, setProductCode] = useState<string | null>(() => new URLSearchParams(window.location.hash.slice(1)).get("product"));
   const [preview, setPreview] = useState<MediaFile | null>(null);
 
   /* ---- جلب الملفات من /api/media (Google Drive) مع fallback تجريبي ---- */
@@ -44,7 +45,7 @@ export default function App() {
 
     try {
       const items = await fetchDriveMedia();
-      setFiles(items.map(toMediaFile));
+      setFiles(withLocalProducts(items.map(toMediaFile)));
       setSource("drive");
       setLastRefreshed(new Date());
       setStatus("ready");
@@ -61,7 +62,7 @@ export default function App() {
 
   /** النسخة التجريبية — تُعرض فقط عند فشل الاتصال وبالضغط الصريح من المستخدم */
   const useDemoFallback = useCallback(() => {
-    setFiles(MEDIA_FILES);
+    setFiles(withLocalProducts(MEDIA_FILES));
     setSource("demo");
     setStatus("ready");
   }, []);
@@ -98,6 +99,7 @@ export default function App() {
 
   const handleNavigate = (s: Section) => {
     setProductCode(null);
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
     setQuery("");
     setCategory("all");
     setFileType("all");
@@ -114,11 +116,19 @@ export default function App() {
   };
 
   const openProduct = (code: string) => {
+    const page = getProductPage(code);
+    if (page) { window.location.assign(page); return; }
     setProductCode(code);
+    window.history.replaceState(null, "", "#product=" + encodeURIComponent(code));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const activeGroup = productCode ? products.find((p) => p.code === productCode) ?? null : null;
+  useEffect(() => {
+    const page = productCode ? getProductPage(productCode) : undefined;
+    if (page) window.location.replace(page);
+  }, [productCode]);
+
+  const activeGroup = productCode ? products.find((p) => normalizeProductCode(p.code) === normalizeProductCode(productCode)) ?? null : null;
 
   return (
     <ToastProvider>
@@ -130,13 +140,21 @@ export default function App() {
             <ProductView
               group={activeGroup}
               files={sorted}
-              onBack={() => setProductCode(null)}
+              onBack={() => { setProductCode(null); window.history.replaceState(null, "", window.location.pathname + window.location.search); }}
               onPreview={setPreview}
               onOpenProduct={openProduct}
             />
           ) : (
             <>
-              <Hero query={query} onQuery={setQuery} files={sorted} loading={isLoading} />
+              <section className="mx-auto max-w-6xl px-4 pt-10 md:px-6 md:pt-14">
+                <p className="text-sm font-bold text-brand-600">مكتبة ريبون</p>
+                <h1 className="mt-2 font-display text-3xl font-extrabold text-ink-950 md:text-4xl">كل ما تحتاجه عن منتجك</h1>
+                <p className="mt-3 text-base text-ink-700">اكتشف المنتجات، تعرّف على استخدامها، وحمّل الملفات المتاحة.</p>
+                <label className="mt-6 block max-w-2xl" htmlFor="product-search">
+                  <span className="mb-2 block text-sm font-bold text-ink-700">ابحث باسم المنتج أو رقم الموديل</span>
+                  <input id="product-search" type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="مثال: RE-5-096" className="h-14 w-full rounded-xl border border-cream-300 bg-cream-50 px-5 text-base text-ink-950 shadow-card" />
+                </label>
+              </section>
 
               {/* الفلاتر — Skeleton أثناء الجلب من Drive */}
               <div className="mx-auto mt-4 max-w-6xl px-4 md:mt-8 md:px-6">

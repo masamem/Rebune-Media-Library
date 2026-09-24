@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 896 672" role="img" aria-label="الخلاط الاحترافي PowerMix">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBF6EE"/><stop offset="1" stop-color="#F1E7D4"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.38" r="0.62">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="jar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.75"/><stop offset="0.5" stop-color="#F4EDE0" stop-opacity="0.35"/><stop offset="1" stop-color="#DCCBB0" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="sm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5B06B"/><stop offset="1" stop-color="#E8823A"/>
+    </linearGradient>
+    <linearGradient id="bas" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8F1E5"/><stop offset="1" stop-color="#E0CFAF"/>
+    </linearGradient>
+  </defs>
+  <rect width="896" height="672" fill="url(#bg)"/>
+  <rect width="896" height="672" fill="url(#glow)"/>
+  <g stroke="#E8601C" stroke-width="5" stroke-linecap="round" opacity="0.35">
+    <path d="M717 132v22M717 198v22M662 165h22M750 165h22M678 126l16 16M740 188l16 16M756 126l-16 16M694 188l-16 16"/>
+  </g>
+  <circle cx="717" cy="165" r="17" fill="none" stroke="#E8601C" stroke-width="5" opacity="0.35"/>
+  <ellipse cx="448" cy="583" rx="235" ry="27" fill="#2A2018" opacity="0.10"/>
+  <g>
+    <!-- الغطاء -->
+    <rect x="372" y="112" width="152" height="30" rx="15" fill="#3A2E22"/>
+    <rect x="428" y="90" width="40" height="26" rx="12" fill="#E8601C"/>
+    <!-- الوعاء -->
+    <path d="M362 142h172l-18 268H380z" fill="url(#jar)" stroke="#C9B28C" stroke-width="2.5"/>
+    <path d="M380 258h138l-12 152H392z" fill="url(#sm)"/>
+    <ellipse cx="449" cy="258" rx="69" ry="12" fill="#F7C98B"/>
+    <g stroke="#D8C3A0" stroke-width="3">
+      <path d="M374 190h26M371 240h26M368 290h26M366 340h26"/>
+    </g>
+    <path d="M392 160l-10 226" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="7" stroke-linecap="round"/>
+    <!-- المقبض -->
+    <path d="M534 178h34a18 18 0 0 1 18 18v96a18 18 0 0 1-18 18h-42" fill="none" stroke="#3A2E22" stroke-width="17" stroke-linecap="round"/>
+    <!-- القاعدة -->
+    <path d="M352 410h192l14 130a16 16 0 0 1-16 18H354a16 16 0 0 1-16-18z" fill="url(#bas)" stroke="#C9B28C" stroke-width="2.5"/>
+    <rect x="352" y="410" width="192" height="16" fill="#E8601C"/>
+    <circle cx="448" cy="492" r="26" fill="#3A2E22"/>
+    <circle cx="448" cy="492" r="26" fill="none" stroke="#1F1710" stroke-width="3"/>
+    <path d="M448 492l14-14" stroke="#E8601C" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="404" cy="530" r="8" fill="#C9B28C"/><circle cx="492" cy="530" r="8" fill="#C9B28C"/>
+  </g>
+  <!-- برتقالة -->
+  <g transform="translate(622 520)">
+    <circle r="44" fill="#F5A03F" stroke="#DD7F1E" stroke-width="3"/>
+    <circle r="34" fill="#FBC98A"/>
+    <g stroke="#F5A03F" stroke-width="4">
+      <path d="M0-30v60M-30 0h60M-21-21l42 42M21-21l-42 42"/>
+    </g>
+  </g>
+  <path d="M252 500c-20-8-26-30-16-46 18 2 30 16 28 34" fill="#8FA96B"/>
+  <path d="M252 500c18-12 20-34 8-48-16 4-26 20-22 38" fill="#7A9659"/>
+</svg>

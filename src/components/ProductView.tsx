@@ -1,3 +1,5 @@
+import ProductInfoLink from "./ProductInfoLink";
+import { normalizeProductCode } from "../data/productPages";
 import { useEffect, useState } from "react";
 import {
   TYPE_LABEL,
@@ -254,6 +256,7 @@ export default function ProductView({
               )}
             </div>
             <div className="shrink-0">
+              <ProductInfoLink code={group.code} />
               {downloadableFiles.length > 0 && (
                 <>
                   <button
@@ -276,6 +279,7 @@ export default function ProductView({
 
       {/* المجموعات */}
       {GROUPS.map((g, gi) => {
+        if (g.key === "images" && normalizeProductCode(group.code) === "RE-5-096") return null;
         const items = group.files.filter(g.match);
         if (items.length === 0) return null;
         return (

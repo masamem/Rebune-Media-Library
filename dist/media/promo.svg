@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 896 672" role="img" aria-label="تصميم عرض رمضان">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F07B3F"/><stop offset="0.55" stop-color="#E8601C"/><stop offset="1" stop-color="#C74E12"/>
+    </linearGradient>
+    <radialGradient id="spot" cx="0.72" cy="0.3" r="0.7">
+      <stop offset="0" stop-color="#FFD9B8" stop-opacity="0.5"/><stop offset="1" stop-color="#FFD9B8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="896" height="672" fill="url(#bg)"/>
+  <rect width="896" height="672" fill="url(#spot)"/>
+  <!-- أشعة الشمس الكبيرة -->
+  <g stroke="#FBF6EE" stroke-width="10" stroke-linecap="round" opacity="0.35">
+    <path d="M132 122v36M132 230v36M44 176h36M184 176h36M70 114l25 25M169 213l25 25M194 114l-25 25M95 213l-25 25"/>
+  </g>
+  <circle cx="132" cy="176" r="30" fill="none" stroke="#FBF6EE" stroke-width="10" opacity="0.35"/>
+  <!-- نص -->
+  <g font-family="Cairo, 'Segoe UI', Tahoma, sans-serif" fill="#FBF6EE">
+    <text x="448" y="118" text-anchor="middle" font-size="30" font-weight="700" letter-spacing="14">REBUNE</text>
+    <text x="448" y="206" text-anchor="middle" font-size="66" font-weight="900">عروض نهاية الموسم</text>
+    <text x="448" y="258" text-anchor="middle" font-size="27" font-weight="600" opacity="0.92">على أجهزة العناية والمنزل — لفترة محدودة</text>
+  </g>
+  <!-- شارة الخصم -->
+  <g transform="translate(672 428)">
+    <circle r="118" fill="#FBF6EE"/>
+    <circle r="100" fill="none" stroke="#E8601C" stroke-width="4" stroke-dasharray="4 14" stroke-linecap="round"/>
+    <g font-family="Cairo, 'Segoe UI', Tahoma, sans-serif" text-anchor="middle">
+      <text y="-26" font-size="30" font-weight="700" fill="#C74E12">خصم حتى</text>
+      <text y="42" font-size="72" font-weight="900" fill="#E8601C">40%</text>
+      <text y="76" font-size="20" font-weight="700" fill="#4C3D2F">يسري حتى 28 فبراير</text>
+    </g>
+  </g>
+  <!-- ظلال المنتجات -->
+  <g fill="#3A2E22" opacity="0.9">
+    <!-- غلاية -->
+    <g transform="translate(180 470)">
+      <path d="M-70-118h124c14 24 21 54 21 87 0 60-21 107-43 127h-80c-22-20-43-67-43-127 0-33 7-63 21-87z"/>
+      <ellipse cx="-8" cy="-120" rx="66" ry="13" fill="#2A2018"/>
+      <circle cx="-8" cy="-136" r="8" fill="#FBF6EE"/>
+      <path d="M-92-96c-44 6-66 40-60 84 4 32 23 56 57 64" fill="none" stroke="#2A2018" stroke-width="16" stroke-linecap="round"/>
+      <rect x="-72" y="96" width="124" height="22" rx="11"/>
+    </g>
+  </g>
+  <g fill="#FBF6EE" opacity="0.95">
+    <!-- خلاط -->
+    <g transform="translate(404 470)">
+      <rect x="-52" y="-176" width="104" height="20" rx="10" fill="#2A2018"/>
+      <path d="M-58-156h116l-12 178H-46z"/>
+      <path d="M44-128h26a12 12 0 0 1 12 12v60a12 12 0 0 1-12 12h-32" fill="none" stroke="#FBF6EE" stroke-width="12" stroke-linecap="round"/>
+      <path d="M-64 22h128l10 96a10 10 0 0 1-10 12H-64a10 10 0 0 1-10-12z"/>
+      <circle cx="0" cy="82" r="15" fill="#E8601C"/>
+    </g>
+  </g>
+  <!-- نقاط زخرفية -->
+  <g fill="#FBF6EE" opacity="0.5">
+    <circle cx="804" cy="120" r="7"/><circle cx="836" cy="166" r="5"/><circle cx="786" cy="196" r="4"/>
+    <circle cx="96" cy="560" r="6"/><circle cx="316" cy="600" r="5"/>
+  </g>
+</svg>
