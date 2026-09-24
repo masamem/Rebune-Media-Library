@@ -1,3 +1,4 @@
+import ProductInfoLink from "./ProductInfoLink";
 import { useEffect, useState } from "react";
 import {
   TYPE_LABEL,
@@ -254,6 +255,7 @@ export default function ProductView({
               )}
             </div>
             <div className="shrink-0">
+              <ProductInfoLink code={group.code} />
               {downloadableFiles.length > 0 && (
                 <>
                   <button

@@ -1,3 +1,4 @@
+import ProductInfoLink from "./ProductInfoLink";
 import { useState } from "react";
 import { TYPE_LABEL, formatDate, type MediaFile } from "../data/media";
 import { downloadMedia } from "../lib/download";
@@ -151,6 +152,7 @@ export default function FileCard({
         </div>
       </div>
 
+      <div className="px-3.5 pb-4 md:px-4"><ProductInfoLink code={file.productCode} /></div>
       <span className="sr-only">أضيف في {formatDate(file.date)}</span>
     </article>
   );

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 896 672" role="img" aria-label="فيديو العناية بالبشرة Derma Glow">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBEFE0"/><stop offset="1" stop-color="#F3E0C6"/>
+    </linearGradient>
+    <linearGradient id="rose" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F0CDB8"/><stop offset="1" stop-color="#BC7F63"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#F8D9B4"/><stop offset="1" stop-color="#F5CDA0"/>
+    </radialGradient>
+  </defs>
+  <rect width="896" height="672" fill="url(#bg)"/>
+  <circle cx="448" cy="330" r="252" fill="url(#halo)"/>
+  <!-- شمس الزاوية -->
+  <g stroke="#E8601C" stroke-width="5" stroke-linecap="round" opacity="0.45">
+    <path d="M777 86v20M777 146v20M727 116h20M807 116h20M741 80l15 15M798 137l15 15M813 80l-15 15M756 137l-15 15"/>
+  </g>
+  <circle cx="777" cy="116" r="15" fill="none" stroke="#E8601C" stroke-width="5" opacity="0.45"/>
+  <!-- أوراق نبات -->
+  <g>
+    <path d="M118 672c-10-84 24-150 96-182-6 84-34 146-96 182z" fill="#8FA96B"/>
+    <path d="M118 672c4-70 34-122 96-150" fill="none" stroke="#77914F" stroke-width="5" stroke-linecap="round"/>
+    <path d="M206 672c2-52 22-94 62-118-2 56-22 98-62 118z" fill="#A9BE85"/>
+  </g>
+  <!-- الوجه -->
+  <g>
+    <!-- الحجاب -->
+    <path d="M448 128c108 0 186 84 186 196 0 96-52 168-128 200l-20 60h-76l-20-60c-76-32-128-104-128-200 0-112 78-196 186-196z" fill="#E8A87C"/>
+    <path d="M448 128c108 0 186 84 186 196 0 20-2 38-6 56-30-70-88-110-180-110s-150 40-180 110c-4-18-6-36-6-56 0-112 78-196 186-196z" fill="#DD9668"/>
+    <!-- الوجه -->
+    <path d="M448 196c78 0 132 62 132 150 0 92-56 158-132 158s-132-66-132-158c0-88 54-150 132-150z" fill="#F2C6A0"/>
+    <!-- حافة الحجاب الداخلية -->
+    <path d="M316 330c0-84 58-142 132-142s132 58 132 142" fill="none" stroke="#C97F52" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+    <!-- العينان مغلقتان -->
+    <path d="M392 330c8 8 24 8 32 0M472 330c8 8 24 8 32 0" fill="none" stroke="#7A5138" stroke-width="7" stroke-linecap="round"/>
+    <path d="M388 306c10-8 30-8 40 0M468 306c10-8 30-8 40 0" fill="none" stroke="#8A5F42" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+    <!-- خدود وشفاه -->
+    <circle cx="382" cy="376" r="17" fill="#EBA57F" opacity="0.7"/>
+    <circle cx="514" cy="376" r="17" fill="#EBA57F" opacity="0.7"/>
+    <path d="M432 420c6 8 26 8 32 0" fill="none" stroke="#C46A4A" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <!-- اليد والجهاز -->
+  <g transform="translate(600 388) rotate(-24)">
+    <path d="M-6 40c-30 10-44 34-40 66l66 12c10-34 2-66-26-78z" fill="#F2C6A0"/>
+    <rect x="-30" y="-96" width="60" height="150" rx="30" fill="url(#rose)" stroke="#A96E52" stroke-width="2.5"/>
+    <circle cx="0" cy="-96" r="42" fill="#F7E7DA" stroke="#D9A084" stroke-width="3"/>
+    <circle cx="0" cy="-96" r="18" fill="url(#rose)"/>
+    <path d="M-44 -122a52 52 0 0 1 34-26" fill="none" stroke="#E8601C" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+  </g>
+  <!-- شرارات -->
+  <g fill="#E8601C" opacity="0.8">
+    <path d="M700 250l6 14 14 6-14 6-6 14-6-14-14-6 14-6z"/>
+    <circle cx="238" cy="222" r="6" opacity="0.55"/>
+    <path d="M214 320l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" opacity="0.65"/>
+  </g>
+</svg>

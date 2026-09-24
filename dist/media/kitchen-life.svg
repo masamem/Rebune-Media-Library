@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 896 672" role="img" aria-label="فيديو إعلاني PowerMix في المطبخ">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F7ECD9"/><stop offset="1" stop-color="#EFDFC4"/>
+    </linearGradient>
+    <linearGradient id="sm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5B06B"/><stop offset="1" stop-color="#E8823A"/>
+    </linearGradient>
+    <linearGradient id="jar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.8"/><stop offset="1" stop-color="#E2D2B4" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+  <rect width="896" height="672" fill="url(#bg)"/>
+  <!-- النافذة -->
+  <g>
+    <rect x="96" y="76" width="250" height="290" rx="18" fill="#FBE9C8" stroke="#D9BF97" stroke-width="10"/>
+    <circle cx="221" cy="190" r="52" fill="#F5B06B"/>
+    <g stroke="#F5B06B" stroke-width="7" stroke-linecap="round">
+      <path d="M221 108v20M221 252v20M139 190h20M283 190h20M163 132l14 14M265 234l14 14M279 132l-14 14M177 234l-14 14"/>
+    </g>
+    <path d="M221 76v290M96 221h250" stroke="#D9BF97" stroke-width="8"/>
+    <path d="M120 330c30-26 66-34 100-22M196 336c26-20 58-24 88-12" fill="none" stroke="#C9A76F" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+  </g>
+  <!-- شعاع الشمس -->
+  <path d="M346 96l250 0 190 380-330 0z" fill="#FFFFFF" opacity="0.18"/>
+  <!-- الرف -->
+  <rect x="560" y="128" width="248" height="14" rx="7" fill="#C9A76F"/>
+  <g>
+    <rect x="588" y="76" width="46" height="52" rx="8" fill="#E8601C"/>
+    <rect x="588" y="76" width="46" height="14" rx="7" fill="#C74E12"/>
+    <path d="M666 60c0 38 8 68 26 68s26-30 26-68z" fill="#8FA96B"/>
+    <rect x="676" y="112" width="36" height="30" rx="6" fill="#D9BF97"/>
+    <rect x="736" y="88" width="52" height="40" rx="8" fill="#3A2E22"/>
+    <rect x="736" y="88" width="52" height="10" rx="5" fill="#E8601C"/>
+  </g>
+  <!-- السطح -->
+  <rect x="0" y="452" width="896" height="220" fill="#D9B98C"/>
+  <rect x="0" y="452" width="896" height="18" fill="#C9A76F"/>
+  <g stroke="#C9A76F" stroke-width="4" opacity="0.6">
+    <path d="M0 520h896M0 590h896"/>
+  </g>
+  <!-- الخلاط -->
+  <g transform="translate(470 0)">
+    <ellipse cx="0" cy="560" rx="150" ry="16" fill="#2A2018" opacity="0.12"/>
+    <rect x="-70" y="66" width="140" height="26" rx="13" fill="#3A2E22"/>
+    <rect x="-20" y="46" width="40" height="24" rx="11" fill="#E8601C"/>
+    <path d="M-76 92h152l-16 236H-60z" fill="url(#jar)" stroke="#C9B28C" stroke-width="2.5"/>
+    <path d="M-60 196h122l-10 132H-52z" fill="url(#sm)"/>
+    <ellipse cx="1" cy="196" rx="61" ry="10" fill="#F7C98B"/>
+    <path d="M-52 106l-8 206" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="6" stroke-linecap="round"/>
+    <path d="M64 118h30a16 16 0 0 1 16 16v80a16 16 0 0 1-16 16h-36" fill="none" stroke="#3A2E22" stroke-width="15" stroke-linecap="round"/>
+    <path d="M-86 328h172l12 178a14 14 0 0 1-14 16H-84a14 14 0 0 1-14-16z" fill="#F8F1E5" stroke="#C9B28C" stroke-width="2.5"/>
+    <rect x="-86" y="328" width="172" height="14" fill="#E8601C"/>
+    <circle cx="0" cy="430" r="24" fill="#3A2E22"/>
+    <path d="M0 430l12-12" stroke="#E8601C" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="-40" cy="468" r="7" fill="#C9B28C"/><circle cx="40" cy="468" r="7" fill="#C9B28C"/>
+  </g>
+  <!-- برتقال -->
+  <g transform="translate(250 520)">
+    <ellipse cx="0" cy="46" rx="66" ry="12" fill="#2A2018" opacity="0.12"/>
+    <circle cx="-24" cy="0" r="46" fill="#F5A03F" stroke="#DD7F1E" stroke-width="3"/>
+    <path d="M-24-46c10-14 24-16 34-8-12 10-24 12-34 8z" fill="#8FA96B"/>
+    <circle cx="52" cy="22" r="30" fill="#F5A03F" stroke="#DD7F1E" stroke-width="3"/>
+  </g>
+  <g transform="translate(690 512)">
+    <ellipse cx="0" cy="52" rx="60" ry="11" fill="#2A2018" opacity="0.12"/>
+    <circle r="40" fill="#FBC98A" stroke="#F5A03F" stroke-width="5"/>
+    <g stroke="#F5A03F" stroke-width="4">
+      <path d="M0-28v56M-28 0h56M-20-20l40 40M20-20l-40 40"/>
+    </g>
+  </g>
+  <!-- ورقة نعناع على الخلاط -->
+  <path d="M438 176c-16-6-22-22-14-34 14 2 22 14 20 28" fill="#8FA96B"/>
+</svg>

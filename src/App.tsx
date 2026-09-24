@@ -1,3 +1,5 @@
+import { withLocalProducts } from "./data/localProducts";
+import { normalizeProductCode } from "./data/productPages";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MEDIA_FILES,
@@ -28,23 +30,30 @@ export default function App() {
   const [category, setCategory] = useState<string>("all");
   const [fileType, setFileType] = useState<string>("all");
   const [section, setSection] = useState<Section>("all");
-  const [productCode, setProductCode] = useState<string | null>(null);
+  const [productCode, setProductCode] = useState<string | null>(() => new URLSearchParams(window.location.hash.slice(1)).get("product"));
   const [preview, setPreview] = useState<MediaFile | null>(null);
 
   /* ---- جلب الملفات من /api/media (Google Drive) مع fallback تجريبي ---- */
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [source, setSource] = useState<Source>("drive");
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
-  const load = useCallback(async () => {
-    setStatus("loading");
+  const load = useCallback(async (silent = false) => {
+    if (silent) setRefreshing(true);
+    else setStatus("loading");
+
     try {
       const items = await fetchDriveMedia();
-      setFiles(items.map(toMediaFile));
+      setFiles(withLocalProducts(items.map(toMediaFile)));
       setSource("drive");
+      setLastRefreshed(new Date());
       setStatus("ready");
     } catch {
-      setStatus("error");
+      if (!silent) setStatus("error");
+    } finally {
+      if (silent) setRefreshing(false);
     }
   }, []);
 
@@ -54,7 +63,7 @@ export default function App() {
 
   /** النسخة التجريبية — تُعرض فقط عند فشل الاتصال وبالضغط الصريح من المستخدم */
   const useDemoFallback = useCallback(() => {
-    setFiles(MEDIA_FILES);
+    setFiles(withLocalProducts(MEDIA_FILES));
     setSource("demo");
     setStatus("ready");
   }, []);
@@ -91,6 +100,7 @@ export default function App() {
 
   const handleNavigate = (s: Section) => {
     setProductCode(null);
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
     setQuery("");
     setCategory("all");
     setFileType("all");
@@ -108,10 +118,11 @@ export default function App() {
 
   const openProduct = (code: string) => {
     setProductCode(code);
+    window.history.replaceState(null, "", "#product=" + encodeURIComponent(code));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const activeGroup = productCode ? products.find((p) => p.code === productCode) ?? null : null;
+  const activeGroup = productCode ? products.find((p) => normalizeProductCode(p.code) === normalizeProductCode(productCode)) ?? null : null;
 
   return (
     <ToastProvider>
@@ -123,7 +134,7 @@ export default function App() {
             <ProductView
               group={activeGroup}
               files={sorted}
-              onBack={() => setProductCode(null)}
+              onBack={() => { setProductCode(null); window.history.replaceState(null, "", window.location.pathname + window.location.search); }}
               onPreview={setPreview}
               onOpenProduct={openProduct}
             />
@@ -177,6 +188,9 @@ export default function App() {
                     onClearAll={handleClearAll}
                     onPreview={setPreview}
                     onOpenProduct={openProduct}
+                    onRefresh={() => void load(true)}
+                    refreshing={refreshing}
+                    lastRefreshed={lastRefreshed}
                   />
                 )}
               </div>
