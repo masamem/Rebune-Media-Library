@@ -10,26 +10,26 @@ const lerp = THREE.MathUtils.lerp;
 let reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let current=0, target=0, chapter=-1, alive=true, last=0;
 const chapters = [
- ['REBUNE CONTACT GRILL','Not just a grill.','Scroll to discover'],
- ['01 / FORM','Built to<br>grill more.','Matte black. A distinctive silhouette.'],
- ['02 / OPEN-FLAT','Opens wider.<br>Grills more.','180° OPEN-FLAT DESIGN'],
- ['03 / SURFACE','270 × 220<span class="unit"> mm</span>','Spacious grilling surface · per plate'],
- ['04 / POWER','1800–2000W','Power that brings the heat.'],
- ['05 / CONTROL','Turn.<br>Adjust.<br>Grill.','Temperature control, within reach.'],
- ['06 / THE MOMENT','Press.<br>Grill.<br>Enjoy.',''],
- ['07 / POSSIBILITIES','One grill.<br>More possibilities.',''],
- ['08 / EVERYDAY','Made for<br>every day.','Designed for practical everyday use.'],
- ['09 / ANATOMY','Every part.<br>In its place.','An exploration of the visible components.'],
- ['10 / TOGETHER','Beautifully<br>resolved.',''],
- ['RE-5-096 CONTACT GRILL','REBUNE','Beyond Imagination'],
+ ['شواية ريبون','أكثر من مجرد شواية.','مرّر لتكتشف'],
+ ['01 / التصميم','مصمّمة لتمنحك<br>المزيد.','أسود مطفي. وحضور مميّز.'],
+ ['02 / الفتح الكامل','تفتح أكثر.<br>لتشوي أكثر.','تصميم يفتح بالكامل بزاوية 180°'],
+ ['03 / مساحة الشواء','<bdi>270 × 220</bdi><span class="unit"> مم</span>','مساحة شواء واسعة · مقاس كل لوح'],
+ ['04 / القوة','<bdi>1800–2000</bdi><span class="unit"> واط</span>','قوة تمنحك الحرارة التي تحتاجها.'],
+ ['05 / التحكم','أدِر.<br>اضبط.<br>واشوِ.','تحكّم بالحرارة بين يديك.'],
+ ['06 / لحظة التذوّق','اضغط.<br>اشوِ.<br>واستمتع.',''],
+ ['07 / خيارات أكثر','شواية واحدة.<br>إمكانيات أكثر.',''],
+ ['08 / استخدام يومي','تفاصيل عملية.<br>لكل يوم.','مصمّمة لسهولة الاستخدام اليومي.'],
+ ['09 / الأجزاء','كل جزء.<br>في مكانه.','اكتشف المكوّنات الظاهرة للشواية.'],
+ ['10 / إعادة التجميع','تعود الأجزاء.<br>لتكتمل التجربة.',''],
+ ['شواية ريبون RE-5-096','ريبون','أبعد من الخيال'],
 ];
 const nav=document.querySelector('.chapter-nav');
-chapters.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',`Chapter ${i}: ${c[1].replace(/<[^>]*>/g,' ')}`);b.addEventListener('click',()=>go(i));nav.appendChild(b)});
+chapters.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',`المرحلة ${i}: ${c[1].replace(/<[^>]*>/g,' ')}`);b.addEventListener('click',()=>go(i));nav.appendChild(b)});
 function go(i){window.scrollTo({top:(document.documentElement.scrollHeight-innerHeight)*clamp((i===0||i===11?i:i+.2)/11),behavior:reduced?'instant':'smooth'})}
 $('next-chapter').onclick=()=>go(Math.min(11,Math.floor(current)+1));
 $('replay').onclick=()=>go(0);
 $('motion-toggle').onclick=()=>{reduced=!reduced;setMotion()};
-function setMotion(){$('motion-toggle').setAttribute('aria-pressed',String(reduced));$('motion-toggle').textContent=reduced?'Enable motion':'Reduce motion'}setMotion();
+function setMotion(){$('motion-toggle').setAttribute('aria-pressed',String(reduced));$('motion-toggle').textContent=reduced?'تفعيل الحركة':'تقليل الحركة'}setMotion();
 function onScroll(){target=clamp(scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight))*11}addEventListener('scroll',onScroll,{passive:true});onScroll();
 
 let renderer;
@@ -114,7 +114,7 @@ const rim=new THREE.DirectionalLight(0xb7cee9,3);rim.position.set(2,3,-4);scene.
 const orange=new THREE.PointLight(0xe8601c,12,12);orange.position.set(-2,1.5,-3);scene.add(orange);
 const fill=new THREE.DirectionalLight(0xe3e6e9,.6);fill.position.set(0,2,5);scene.add(fill);
 const warm=new THREE.PointLight(0xff9c51,0,4);warm.position.set(0,1,0);root.add(warm);
-const labels=[['UPPER HOUSING',upperHousing,[0,.35,0]],['UPPER PLATE',upperPlate,[-.9,0,0]],['HINGE / ARMS',arms,[1.5,.2,1.7]],['LOWER PLATE',lowerPlate,[-1.35,.1,0]],['LOWER HOUSING',baseGroup,[-1.45,.2,0]],['FRONT CONTROLS',front,[-.35,0,.15]],['DRIP TRAY',tray,[.3,0,.3]]].map(([text,obj,offset])=>{const el=document.createElement('span');el.className='part-label';el.textContent=text;$('part-labels').appendChild(el);return {el,obj,offset:new THREE.Vector3(...offset)}});
+const labels=[['الهيكل العلوي',upperHousing,[0,.35,0]],['لوح الشواء العلوي',upperPlate,[-.9,0,0]],['الأذرع والمفصلة',arms,[1.5,.2,1.7]],['لوح الشواء السفلي',lowerPlate,[-1.35,.1,0]],['الهيكل السفلي',baseGroup,[-1.45,.2,0]],['التحكم الأمامي',front,[-.35,0,.15]],['صينية التجميع',tray,[.3,0,.3]]].map(([text,obj,offset])=>{const el=document.createElement('span');el.className='part-label';el.textContent=text;$('part-labels').appendChild(el);return {el,obj,offset:new THREE.Vector3(...offset)}});
 // Keyframed camera positions are interpolated continuously; animation is reversible.
 const frames=[
  {cam:[4.8,3.9,6.2],look:[0,.5,0],open:0,rot:-.25},
@@ -182,7 +182,7 @@ function update(now){if(!running||!alive)return;requestAnimationFrame(update);if
  const frac=p-Math.floor(p);let copyOpacity=chapter===0||chapter===11?1:smooth(frac/.15)*(1-smooth((frac-.86)/.14));if(chapter===6)copyOpacity*=smooth((p-6.83)/.08);
  $('copy').style.opacity=copyOpacity;$('copy').style.transform=`translateY(${(1-copyOpacity)*12}px)`;
  $('angle').style.opacity=p>=2&&p<3?smooth((p-2)*4)*(1-smooth((p-2.9)*10)):0;$('angle-number').textContent=Math.round(open/Math.PI*180)+'°';
- $('food-label').textContent=p>=7&&p<8?['Panini','Chicken','Steak','Vegetables'][Math.round(foodProgress)]:'';
+ $('food-label').textContent=p>=7&&p<8?['بانيني','دجاج','ستيك','خضروات'][Math.round(foodProgress)]:'';
  $('final-actions').hidden=p<10.98;$('progress-bar').style.transform=`scaleX(${p/11})`;
  labels.forEach(({el,obj,offset})=>{el.style.display=explode>.35?'block':'none';if(explode>.35){v.copy(offset);obj.localToWorld(v);v.project(camera);el.style.left=(v.x*.5+.5)*innerWidth+'px';el.style.top=(-v.y*.5+.5)*innerHeight+'px';el.style.opacity=smooth((explode-.35)/.5)}});
  renderer.render(scene,camera);
