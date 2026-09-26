@@ -32,3 +32,6 @@
 
 حدود الدقة: النموذج والأطعمة مبنية برمجيًا من الصور المرجعية وليست ملفات CAD أو مسحًا ثلاثي الأبعاد معتمدًا. الغذاء والخامات تمثيل بصري تقريبي. التفكيك يوضح الأجزاء الخارجية الظاهرة فقط، وليس تعليمات صيانة أو فك للجهاز. للوصول إلى تطابق هندسي وخامات فوتوغرافية يلزم نموذج GLB/CAD موثّق وخامات مصورة.
 لم تُختبر اللقطات بصريًا في المتصفح لأن بيئة المعاينة رفضت الاتصال. تم التحقق من البناء والمسارات. يجب مراجعة حركة المفصلة وتفكيك الأجزاء بصريًا قبل نشر النسخة النهائية للجمهور.
+
+
+RE-7-122: Arabic scroll journey at /products/RE-7-122/index.html. Uses the unmodified original PNG with proportional scroll zoom and ambient lighting, not a reconstructed 3D model. Facts sourced from supplied manual and introduction form. Dimensions omitted because sources disagree. CTA links to rebune.com pending a specific product URL.
