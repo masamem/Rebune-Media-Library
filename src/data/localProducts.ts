@@ -1,6 +1,7 @@
 import type { MediaFile } from "./media";
 import { normalizeProductCode } from "./productPages";
 export const LOCAL_PRODUCT_MEDIA: MediaFile[] = [
+{"id": "local-heater-product.png", "productCode": "RE-7-122", "productName": "دفاية ريبون الكهربائية", "category": "أجهزة منزلية", "date": "2026-09-26", "fileName": "دفاية ريبون", "fileType": "image", "extension": "png", "thumbnail": "/products/RE-7-122/assets/product.png", "previewUrl": "/products/RE-7-122/assets/product.png", "downloadUrl": "/products/RE-7-122/assets/product.png", "size": "1355 KB"},{"id": "local-heater-manual.pdf", "productCode": "RE-7-122", "productName": "دفاية ريبون الكهربائية", "category": "أجهزة منزلية", "date": "2026-09-26", "fileName": "دليل الاستخدام", "fileType": "pdf", "extension": "pdf", "thumbnail": "/products/RE-7-122/assets/product.png", "previewUrl": "/products/RE-7-122/assets/manual.pdf", "downloadUrl": "/products/RE-7-122/assets/manual.pdf", "size": "17270 KB"},
   {
     "id": "local-grill-food.jpg",
     "productCode": "RE-5-096",
