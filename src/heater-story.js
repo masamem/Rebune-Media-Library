@@ -9,7 +9,11 @@ const scenes=[
 ['06 / التصميم','أجزاء تتكامل.<br><em>لتكتمل التجربة.</em>','استكشف الهيكل والشبك والقاعدة والأرجل، ثم تابع التمرير لإعادة تجميعها.','تصوّر ثلاثي الأبعاد للأجزاء الخارجية',1,0,1,.15],
 ['دفاية ريبون · RE-7-122','ريبون.<br><em>أبعد من الخيال.</em>','دفء وأجواء تكتمل بها لحظاتك.','2000 واط &nbsp; · &nbsp; تحكّم عن بُعد &nbsp; · &nbsp; مؤقت',1,0,1,.22]
 ];const $=id=>document.getElementById(id),visual=document.querySelector('.visual'),copy=document.querySelector('.copy');let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,p=0,target=0,last=-1,raf=0;
-let model;try{model=createHeater(document.getElementById('heater-canvas'));document.getElementById('product').hidden=true}catch(e){document.getElementById('heater-canvas').style.display='none';console.warn('3D unavailable',e)}
+let model;const productImage=document.getElementById('product'),modelCanvas=document.getElementById('heater-canvas');
+modelCanvas.style.display='none';
+function fallback(error){model=null;modelCanvas.style.display='none';productImage.hidden=false;console.warn('3D unavailable',error)}
+try{model=createHeater(modelCanvas);model.ready.then(()=>{modelCanvas.style.display='block';productImage.hidden=true;updateTarget()}).catch(fallback)}catch(error){fallback(error)}
+
 function go(i){window.scrollTo({top:(document.documentElement.scrollHeight-innerHeight)*i/7,behavior:reduced?'instant':'smooth'})}
 scenes.forEach((s,i)=>{const b=document.createElement('button');b.setAttribute('aria-label',s[0]);b.onclick=()=>go(i);$('chapters').append(b)});
 function updateTarget(){target=Math.max(0,Math.min(7,scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)*7));if(!raf)raf=requestAnimationFrame(draw)}
